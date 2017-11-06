@@ -18,45 +18,45 @@ RUN apt-get update && \
 RUN docker-php-ext-install mcrypt
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# Install the PHP gd library
+# install the PHP gd library
 RUN docker-php-ext-configure gd \
         --enable-gd-native-ttf \
         --with-jpeg-dir=/usr/lib \
         --with-freetype-dir=/usr/include/freetype2 && \
     docker-php-ext-install gd
 
-# Install the soap extension
+# install the soap extension
 RUN apt-get update -yqq && \
     apt-get -y install libxml2-dev && \
     docker-php-ext-install soap
 
-# Install Php Redis Extension
+# install Php Redis Extension
 RUN pecl install -o -f redis \
     &&  rm -rf /tmp/pear \
     &&  docker-php-ext-enable redis
 
-# Install the mongodb extension
+# install the mongodb extension
 RUN pecl install mongodb && \
     docker-php-ext-enable mongodb
 
-# Install bcmath, mbstring and zip extensions
+# install bcmath, mbstring and zip extensions
 RUN docker-php-ext-install bcmath && \
     docker-php-ext-install mbstring && \
     docker-php-ext-install zip
 
-# Enable Exif PHP extentions requirements
+# enable Exif PHP extentions requirements
 RUN docker-php-ext-install exif
 
-# Tokenizer Modifications:
+# tokenizer Modifications:
 RUN docker-php-ext-install tokenizer
 
-# Install intl and requirements
+# install intl and requirements
 RUN apt-get update -yqq && \
     apt-get install -y zlib1g-dev libicu-dev g++ && \
     docker-php-ext-configure intl && \
     docker-php-ext-install intl
 
-# Install the ghostscript extension for PDF editing
+# install the ghostscript extension for PDF editing
 RUN apt-get update -yqq \
     && apt-get install -y \
     poppler-utils \
@@ -71,7 +71,7 @@ RUN apt-get update -yqq && \
 RUN yes "" | pecl install msgpack-beta \
     && echo "extension=msgpack.so" > /usr/local/etc/php/conf.d/ext-msgpack.ini
 
-# Compile igbinary extension
+# compile igbinary extension
 RUN cd /tmp/ && git clone https://github.com/igbinary/igbinary "php-igbinary" && \
     cd php-igbinary && \
     phpize && \
@@ -146,7 +146,7 @@ RUN docker-php-ext-install \
     sysvsem \
     sysvshm    
 
-# Install the php memcache & memcached extension
+# install the php memcache & memcached extension
 RUN set -x \
     && apt-get update && apt-get install -y --no-install-recommends unzip libssl-dev libpcre3 libpcre3-dev \
     && cd /tmp \
@@ -175,21 +175,15 @@ RUN curl -L -o /tmp/memcached.tar.gz "https://github.com/php-memcached-dev/php-m
     && docker-php-ext-enable memcached
 
 # mhash
-RUN apt-get install -y libmhash2 libmhash-dev && \
-    cd /usr/src/ && \
-    curl -O -L https://downloads.sourceforge.net/project/mhash/mhash/0.9.9.9/mhash-0.9.9.9.tar.gz && \
-    tar xzf mhash-0.9.9.9.tar.gz && \
-    cd mhash-0.9.9.9 && \
-    ./configure && make && make install && \
-    ln -s /usr/local/lib/libmhash.so.2 /usr/lib/libmhash.so.2
+RUN apt-get install -y libmhash2 libmhash-dev
 
-RUN docker-php-ext-configure hash --with-mhash=/usr/src/mhash-0.9.9.9/ && \
+RUN docker-php-ext-configure hash --with-mhash && \
     docker-php-ext-install hash
 
 # Opcache
 RUN docker-php-ext-install opcache
 
-# Install APCu
+# install APCu
 RUN pecl install apcu-5.1.8 && \
     pecl install apcu_bc-1.0.3 && \
     docker-php-ext-enable apcu --ini-name 10-docker-php-ext-apcu.ini && \
@@ -201,7 +195,8 @@ RUN pecl install apcu-5.1.8 && \
 #--------------------------------------------------------------------------
 #
 
-RUN apt-get -y install libfcgi0ldbl jq nano supervisord git mysql-client cron redis-tools
+# install helpful libs
+RUN apt-get -y install libfcgi0ldbl jq nano supervisor git mysql-client cron redis-tools
 
 # composer
 RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer && chmod +x /usr/local/bin/composer
@@ -217,11 +212,6 @@ RUN echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/
     DEBIAN_FRONTEND=noninteractive apt-get -y install newrelic-php5 newrelic-sysmond && \
     export NR_INSTALL_SILENT=1 && newrelic-install install
 
-# install SendGrid
-RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections && \
-    echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
-    DEBIAN_FRONTEND=noninteractive apt-get install postfix libsasl2-modules -y
-
 # install blackfire.io profiler
 RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
     && curl -A "Docker" -o /tmp/blackfire-probe.tar.gz -D - -L -s https://blackfire.io/api/v1/releases/probe/php/linux/amd64/$version \
@@ -229,16 +219,29 @@ RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
     && mv /tmp/blackfire-*.so $(php -r "echo ini_get('extension_dir');")/blackfire.so \
     && printf "extension=blackfire.so\nblackfire.agent_socket=tcp://blackfire:8707\n" > $PHP_INI_DIR/conf.d/blackfire.ini
 
-# Install shared PHP code
+# install SendGrid
+RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections && \
+    echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
+    DEBIAN_FRONTEND=noninteractive apt-get install postfix libsasl2-modules -y
+
+# install shared PHP code
 RUN git clone https://github.com/nrk/predis.git /usr/local/lib/php/predis && \
-    git clone -b magento https://github.com/markhilton/redis-http-cache.git /usr/local/lib/php/redis-http-cache
+    git clone https://github.com/markhilton/redis-http-cache.git /usr/local/lib/php/redis-http-cache
 
 # Set default work directory
 ADD scripts/* /usr/local/bin/
 RUN chmod +x  /usr/local/bin/*
 
+# install aliases
+RUN echo "" >> ~/.bashrc && \
+    echo "# Load Custom Aliases" >> ~/.bashrc && \
+    echo "source /usr/local/bin/aliases.sh" >> ~/.bashrc && \
+    echo "" >> ~/.bashrc && \
+    sed -i 's/\r//' /usr/local/bin/aliases.sh && \
+    sed -i 's/^#! \/bin\/sh/#! \/bin\/bash/' /usr/local/bin/aliases.sh
+
 # Clean up
-RUN apt-get remove -y php5-common && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Health check
 HEALTHCHECK --interval=10s --timeout=5s \
