@@ -175,7 +175,10 @@ RUN curl -L -o /tmp/memcached.tar.gz "https://github.com/php-memcached-dev/php-m
     && docker-php-ext-enable memcached
 
 # mhash
-RUN apt-get install -y libmhash2 libmhash-dev
+RUN apt-get install -y libmhash2 libmhash-dev libc-client-dev libkrb5-dev
+
+RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
+    && docker-php-ext-install imap
 
 RUN docker-php-ext-configure hash --with-mhash && \
     docker-php-ext-install hash
