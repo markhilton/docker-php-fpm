@@ -192,6 +192,24 @@ RUN pecl install apcu-5.1.8 && \
     docker-php-ext-enable apcu --ini-name 10-docker-php-ext-apcu.ini && \
     docker-php-ext-enable apc --ini-name 20-docker-php-ext-apc.ini
 
+# install MSSQL support
+# install ODBC driver
+RUN apt-get update -y && apt-get install -y apt-transport-https locales
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
+    curl https://packages.microsoft.com/config/debian/8/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
+    export DEBIAN_FRONTEND=noninteractive && apt-get update -y && \
+    ACCEPT_EULA=Y apt-get install -y msodbcsql unixodbc-dev
+RUN set -xe \
+    && pecl install pdo_sqlsrv \
+    && docker-php-ext-enable pdo_sqlsrv \
+    && apt-get purge -y unixodbc-dev && apt-get autoremove -y && apt-get clean
+
+# set locale to utf-8
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
+    locale-gen
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
+
+
 #
 #--------------------------------------------------------------------------
 # Final Touches
@@ -200,6 +218,9 @@ RUN pecl install apcu-5.1.8 && \
 
 # install helpful libs
 RUN apt-get -y install libfcgi0ldbl jq nano supervisor git mysql-client cron redis-tools
+
+# crontab fix: https://stackoverflow.com/questions/43323754/cannot-make-remove-an-entry-for-the-specified-session-cron
+RUN sed -i '/session    required     pam_loginuid.so/c\#session    required   pam_loginuid.so' /etc/pam.d/cron
 
 # composer
 RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer && chmod +x /usr/local/bin/composer

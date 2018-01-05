@@ -11,7 +11,6 @@ if [ ! -z ${PHP_CRONTABS_PATH+x} ] && [ "$PHP_CRONTABS_PATH" != "" ]; then
 	done
 
 	echo
-	touch /var/log/cron.log 
 	printenv | grep -v "no_proxy" >> /etc/environment
 
 	/etc/init.d/cron start > /dev/null
