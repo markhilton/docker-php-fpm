@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+
+  php70:
+    image: crunchgeek/php-fpm:7.0.r1
+    restart: always
+    hostname: php70
+    container_name: php70
+    environment:
+      - ENDPOINT=${ENDPOINT}
+      - FILESYSTEM=${FILESYSTEM}
+      - APPLICATIONS=${APPLICATIONS}
+      - NEWRELIC_LICENSE=${NEWRELIC_LICENSE}
+      - SMTP_LOGIN=${SMTP_LOGIN}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+    volumes:
+      - ${APPLICATIONS}:/applications
+      - configurations:/usr/local/etc/sites/
+
+volumes:
+  configurations:
