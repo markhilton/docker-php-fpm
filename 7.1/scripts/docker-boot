@@ -29,7 +29,7 @@ echo "include=etc/php-fpm.d/*.conf" >> /usr/local/etc/php-fpm.conf
 ### load PHP-FPM pool configurations
 if [ ! -z ${PHP_POOL_PATH+x} ] && [ "$PHP_POOL_PATH" != "" ]; then
 	printf "env PHP_POOL_PATH: "
-	rm /usr/local/etc/php-fpm.d/www.conf
+	rm -f /usr/local/etc/php-fpm.d/www.conf
 	for f in ${PHP_POOL_PATH}; do 
 		printf "$f, "; 
 		rm -f /usr/local/etc/php-fpm.d/${f##*/}
