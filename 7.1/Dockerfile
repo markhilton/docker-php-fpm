@@ -227,6 +227,12 @@ RUN sed -i '/session    required     pam_loginuid.so/c\#session    required   pa
 # composer
 RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer && chmod +x /usr/local/bin/composer
 
+# laravel installer & npm
+RUN cd ~/ && composer global require laravel/installer 
+RUN curl -sL https://deb.nodesource.com/setup_9.x | bash - && apt-get install -y nodejs
+
+ENV PATH="$PATH:/root/.composer/vendor/bin"
+
 # install modman
 RUN curl -s -L https://raw.github.com/colinmollenhour/modman/master/modman-installer | bash && \
     mv ~/bin/modman /usr/sbin/
