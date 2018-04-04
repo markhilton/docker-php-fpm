@@ -230,6 +230,7 @@ RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/lo
 # laravel installer & npm
 RUN cd ~/ && composer global require laravel/installer 
 RUN curl -sL https://deb.nodesource.com/setup_9.x | bash - && apt-get install -y nodejs
+RUN npm i -g npm
 
 ENV PATH="$PATH:/root/.composer/vendor/bin"
 
