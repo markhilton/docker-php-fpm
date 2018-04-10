@@ -16,7 +16,7 @@ RUN apt-get update && \
         libmcrypt-dev
 
 RUN docker-php-ext-install mcrypt
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+RUN docker-php-ext-install mysqli pdo_mysql
 
 # install the PHP gd library
 RUN docker-php-ext-configure gd \
