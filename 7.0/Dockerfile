@@ -217,7 +217,11 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 #
 
 # install helpful libs
-RUN apt-get -y install libfcgi0ldbl jq nano supervisor git mysql-client cron redis-tools
+RUN echo "deb http://ftp.debian.org/debian jessie-backports main" > /etc/apt/sources.list.d/backports.list && \
+    apt-get update -y && apt-get -t jessie-backports -y install certbot && \
+    apt-get -y install libfcgi0ldbl jq nano supervisor git mysql-client cron redis-tools
+
+RUN openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
 
 # crontab fix: https://stackoverflow.com/questions/43323754/cannot-make-remove-an-entry-for-the-specified-session-cron
 RUN sed -i '/session    required     pam_loginuid.so/c\#session    required   pam_loginuid.so' /etc/pam.d/cron
