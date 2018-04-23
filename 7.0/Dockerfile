@@ -250,7 +250,8 @@ RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections &&
 
 # install shared PHP code
 RUN git clone https://github.com/nrk/predis.git /usr/local/lib/php/predis && \
-    git clone https://github.com/markhilton/redis-http-cache.git /usr/local/lib/php/redis-http-cache
+    git clone https://github.com/markhilton/redis-http-cache.git /usr/local/lib/php/redis-http-cache && \
+    cd /usr/local/lib/php/redis-http-cache && git checkout tags/1.0.0
 
 # Set default work directory
 ADD scripts/* /usr/local/bin/
