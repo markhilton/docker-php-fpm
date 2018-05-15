@@ -5,7 +5,6 @@ MAINTAINER Mark Hilton <nerd305@gmail.com>
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         git \
-        curl \
         libmemcached-dev \
         libz-dev \
         libpq-dev \
@@ -217,7 +216,7 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 #
 
 # install helpful libs
-RUN apt-get -y install libfcgi0ldbl jq nano supervisor git mysql-client cron redis-tools
+RUN apt-get -y install libfcgi0ldbl jq nano supervisor mysql-client cron redis-tools
 
 # crontab fix: https://stackoverflow.com/questions/43323754/cannot-make-remove-an-entry-for-the-specified-session-cron
 RUN sed -i '/session    required     pam_loginuid.so/c\#session    required   pam_loginuid.so' /etc/pam.d/cron

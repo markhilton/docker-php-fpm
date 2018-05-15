@@ -25,10 +25,10 @@ fi
 ### in case container is restarting
 echo "[global]"                     >  /usr/local/etc/php-fpm.conf
 echo "include=etc/php-fpm.d/*.conf" >> /usr/local/etc/php-fpm.conf
-echo "env PHP_POOL_PATH: ${PHP_POOL_PATH}"
 
 ### load PHP-FPM pool configurations
 if [ ! -z ${PHP_POOL_PATH+x} ] && [ "$PHP_POOL_PATH" != "" ]; then
+	echo "env PHP_POOL_PATH: ${PHP_POOL_PATH}"
 	echo "include=$PHP_POOL_PATH" >> /usr/local/etc/php-fpm.conf
 fi
 

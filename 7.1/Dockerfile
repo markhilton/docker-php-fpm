@@ -5,7 +5,6 @@ MAINTAINER Mark Hilton <nerd305@gmail.com>
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         git \
-        curl \
         libmemcached-dev \
         libz-dev \
         libpq-dev \
@@ -209,6 +208,18 @@ RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
+# geoip
+RUN runtimeRequirements="libgeoip-dev" \
+    && apt-get update && apt-get install -y ${runtimeRequirements} \
+    && pecl install geoip-1.1.1 \
+    && printf "extension=geoip.so\n[geoip]\ngeoip.custom_directory = /usr/share/GeoIP/\n" > /usr/local/etc/php/conf.d/ext-geoip.ini
+
+RUN mkdir -p /usr/share/GeoIP && cd /usr/share/GeoIP/ && \
+    rm -f GeoIP.dat GeoIPv6.dat && \
+    curl -L -O http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz && \
+    curl -L -O http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz && \
+    gzip -d * && \
+    mv GeoLiteCity.dat GeoIPCity.dat
 
 #
 #--------------------------------------------------------------------------
@@ -217,7 +228,7 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 #
 
 # install helpful libs
-RUN apt-get -y install libfcgi0ldbl jq nano supervisor git mysql-client cron redis-tools
+RUN apt-get -y install libfcgi0ldbl jq nano supervisor mysql-client cron redis-tools
 
 # crontab fix: https://stackoverflow.com/questions/43323754/cannot-make-remove-an-entry-for-the-specified-session-cron
 RUN sed -i '/session    required     pam_loginuid.so/c\#session    required   pam_loginuid.so' /etc/pam.d/cron
@@ -257,8 +268,7 @@ RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections &&
 
 # install shared PHP code
 RUN git clone https://github.com/nrk/predis.git /usr/local/lib/php/predis && \
-    git clone https://github.com/markhilton/redis-http-cache.git /usr/local/lib/php/redis-http-cache && \
-    cd /usr/local/lib/php/redis-http-cache && git checkout tags/1.0.0
+    git clone https://github.com/markhilton/redis-http-cache.git /usr/local/lib/php/redis-http-cache
 
 # Set default work directory
 ADD scripts/* /usr/local/bin/
