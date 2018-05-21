@@ -1,7 +1,5 @@
 #!/bin/bash
 
-/usr/local/bin/php -v
-
 ### create system user for php pool
 if [ ! -z ${PHP_USER+x} ] && [ ! -z ${PHP_UID+x} ] && [ ! -z ${PHP_GID+x} ] && [ ! -z ${PHP_HOME+x} ] && [ "$PHP_USER" != "" ] && [ "$PHP_UID" != "" ] && [ "$PHP_GID" != "" ] && [ "$PHP_HOME" != "" ]; then
 	echo "env PHP_USER: creating new system user: ${PHP_USER} ${PHP_UID}:${PHP_GID} ${PHP_HOME}"
@@ -50,3 +48,5 @@ if [ ! -z ${PHP_BOOT_SCRIPTS+x} ] && [ "$PHP_BOOT_SCRIPTS" != "" ]; then
 		/bin/bash -c $f
 	done
 fi
+
+/usr/local/bin/php -v
