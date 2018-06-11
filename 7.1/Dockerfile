@@ -9,7 +9,6 @@ RUN apt-get update && \
         libz-dev \
         libpq-dev \
         libjpeg-dev \
-        libpng12-dev \
         libfreetype6-dev \
         libssl-dev \
         libmcrypt-dev
@@ -101,9 +100,9 @@ RUN apt-get install -y libssh2-1-dev && \
 
 # php-module: curl dom bz2 gd json mysqli pcntl pdo pdo_mysql phar posix
 RUN apt-get install -y libxml2-dev libbz2-dev re2c libpng++-dev \
-                      libpng3 libjpeg-dev libvpx-dev zlib1g-dev libgd-dev \
-                      libtidy-dev libxslt1-dev libmagic-dev libexif-dev file \
-                      sqlite3 libsqlite3-dev libxslt-dev
+    libjpeg-dev libvpx-dev zlib1g-dev libgd-dev \
+    libtidy-dev libxslt1-dev libmagic-dev libexif-dev file \
+    sqlite3 libsqlite3-dev libxslt-dev
 
 RUN export CFLAGS="-I/usr/src/php" && \
     docker-php-ext-install xmlreader xmlwriter
@@ -193,7 +192,7 @@ RUN pecl install apcu-5.1.8 && \
 
 # install MSSQL support
 # install ODBC driver
-RUN apt-get update -y && apt-get install -y apt-transport-https locales
+RUN apt-get update -y && apt-get install -y apt-transport-https locales gnupg
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
     curl https://packages.microsoft.com/config/debian/8/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
     export DEBIAN_FRONTEND=noninteractive && apt-get update -y && \
@@ -228,19 +227,14 @@ RUN mkdir -p /usr/share/GeoIP && cd /usr/share/GeoIP/ && \
 #
 
 # install helpful libs
-RUN apt-get -y install libfcgi0ldbl jq nano supervisor mysql-client cron redis-tools
+RUN apt-get -y install libfcgi0ldbl jq nano supervisor cron
 
 # crontab fix: https://stackoverflow.com/questions/43323754/cannot-make-remove-an-entry-for-the-specified-session-cron
 RUN sed -i '/session    required     pam_loginuid.so/c\#session    required   pam_loginuid.so' /etc/pam.d/cron
 
-# composer
+# composer 
+# consider removing to a separate container
 RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer && chmod +x /usr/local/bin/composer
-
-# laravel installer & npm
-RUN cd ~/ && composer global require laravel/installer 
-RUN curl -sL https://deb.nodesource.com/setup_9.x | bash - && apt-get install -y nodejs
-RUN npm i -g npm
-
 ENV PATH="$PATH:/root/.composer/vendor/bin"
 
 # install modman
@@ -288,8 +282,6 @@ RUN apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*
 # Health check
 HEALTHCHECK --interval=5s --timeout=3s \
     CMD SCRIPT_NAME=/status SCRIPT_FILENAME=/status REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1
-
-WORKDIR /var/www
 
 EXPOSE 9000
 
