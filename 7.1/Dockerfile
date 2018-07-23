@@ -207,18 +207,18 @@ RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-# geoip
-RUN runtimeRequirements="libgeoip-dev" \
-    && apt-get update && apt-get install -y ${runtimeRequirements} \
-    && pecl install geoip-1.1.1 \
-    && printf "extension=geoip.so\n[geoip]\ngeoip.custom_directory = /usr/share/GeoIP/\n" > /usr/local/etc/php/conf.d/ext-geoip.ini
+# geoip - DEPRECIATED: using provided by Nginx container
+# RUN runtimeRequirements="libgeoip-dev" \
+#    && apt-get update && apt-get install -y ${runtimeRequirements} \
+#    && pecl install geoip-1.1.1 \
+#    && printf "extension=geoip.so\n[geoip]\ngeoip.custom_directory = /usr/share/GeoIP/\n" > /usr/local/etc/php/conf.d/ext-geoip.ini
 
-RUN mkdir -p /usr/share/GeoIP && cd /usr/share/GeoIP/ && \
-    rm -f GeoIP.dat GeoIPv6.dat && \
-    curl -L -O http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz && \
-    curl -L -O http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz && \
-    gzip -d * && \
-    mv GeoLiteCity.dat GeoIPCity.dat
+# RUN mkdir -p /usr/share/GeoIP && cd /usr/share/GeoIP/ && \
+#    rm -f GeoIP.dat GeoIPv6.dat && \
+#    curl -L -O http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz && \
+#    curl -L -O http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz && \
+#    gzip -d * && \
+#    mv GeoLiteCity.dat GeoIPCity.dat
 
 #
 #--------------------------------------------------------------------------
@@ -227,7 +227,8 @@ RUN mkdir -p /usr/share/GeoIP && cd /usr/share/GeoIP/ && \
 #
 
 # install helpful libs
-RUN apt-get -y install libfcgi0ldbl jq nano supervisor cron
+# RUN apt-get -y install libfcgi0ldbl jq nano supervisor cron
+RUN apt-get -y install nano cron
 
 # crontab fix: https://stackoverflow.com/questions/43323754/cannot-make-remove-an-entry-for-the-specified-session-cron
 RUN sed -i '/session    required     pam_loginuid.so/c\#session    required   pam_loginuid.so' /etc/pam.d/cron

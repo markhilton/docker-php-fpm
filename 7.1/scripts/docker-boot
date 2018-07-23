@@ -1,5 +1,7 @@
 #!/bin/bash
 
+/usr/local/bin/php -v
+
 ### create system user for php pool
 if [ ! -z ${PHP_USER+x} ] && [ ! -z ${PHP_UID+x} ] && [ ! -z ${PHP_GID+x} ] && [ ! -z ${PHP_HOME+x} ] && [ "$PHP_USER" != "" ] && [ "$PHP_UID" != "" ] && [ "$PHP_GID" != "" ] && [ "$PHP_HOME" != "" ]; then
 	echo "env PHP_USER: creating new system user: ${PHP_USER} ${PHP_UID}:${PHP_GID} ${PHP_HOME}"
@@ -24,8 +26,10 @@ fi
 echo "[global]"                     >  /usr/local/etc/php-fpm.conf
 echo "include=etc/php-fpm.d/*.conf" >> /usr/local/etc/php-fpm.conf
 
-### load PHP-FPM pool configurations
+### remove default www.conf pool
+### and load PHP-FPM pool configurations
 if [ ! -z ${PHP_POOL_PATH+x} ] && [ "$PHP_POOL_PATH" != "" ]; then
+
 	printf "env PHP_POOL_PATH: "
 	for f in ${PHP_POOL_PATH}; do 
 		printf "$f, "; 
@@ -35,20 +39,24 @@ if [ ! -z ${PHP_POOL_PATH+x} ] && [ "$PHP_POOL_PATH" != "" ]; then
 	echo
 fi
 
-### load bash scripts
-if [ ! -z ${PHP_BOOT_SCRIPTS+x} ] && [ "$PHP_BOOT_SCRIPTS" != "" ]; then
-	printf "env PHP_BOOT_SCRIPTS: "
-	for f in ${PHP_BOOT_SCRIPTS}; do 
-		printf "$f, "; 
-		rm -f /usr/local/bin/${f##*/}
-		cp $f /usr/local/bin/
-	done
-	echo
-fi
 
 ### load boot bash scripts
 for f in /usr/local/bin/*.sh; do 
 	/bin/bash -c $f
 done
 
-/usr/local/bin/php -v
+
+### load bash scripts
+if [ ! -z ${PHP_BOOT_SCRIPTS+x} ] && [ "$PHP_BOOT_SCRIPTS" != "" ]; then
+	printf "env PHP_BOOT_SCRIPTS: "
+	for f in ${PHP_BOOT_SCRIPTS}; do 
+		printf "$f, "; 
+
+		rm -f /usr/local/bin/${f##*/}
+		cp $f /usr/local/bin/
+
+		chmod +x     /usr/local/bin/${f##*/}
+		/bin/bash -c /usr/local/bin/${f##*/}
+	done
+	echo
+fi
