@@ -26,10 +26,17 @@ fi
 echo "[global]"                     >  /usr/local/etc/php-fpm.conf
 echo "include=etc/php-fpm.d/*.conf" >> /usr/local/etc/php-fpm.conf
 
-### load PHP-FPM pool configurations
+### remove default www.conf pool
+### and load PHP-FPM pool configurations
 if [ ! -z ${PHP_POOL_PATH+x} ] && [ "$PHP_POOL_PATH" != "" ]; then
-	echo "env PHP_POOL_PATH: ${PHP_POOL_PATH}"
-	echo "include=$PHP_POOL_PATH" >> /usr/local/etc/php-fpm.conf
+
+	printf "env PHP_POOL_PATH: "
+	for f in ${PHP_POOL_PATH}; do 
+		printf "$f, "; 
+		rm -f /usr/local/etc/php-fpm.d/${f##*/}
+		cp $f /usr/local/etc/php-fpm.d/
+	done
+	echo
 fi
 
 
@@ -42,11 +49,14 @@ done
 ### load bash scripts
 if [ ! -z ${PHP_BOOT_SCRIPTS+x} ] && [ "$PHP_BOOT_SCRIPTS" != "" ]; then
 	printf "env PHP_BOOT_SCRIPTS: "
-	for f in $PHP_BOOT_SCRIPTS; do 
-		printf "${f##*/}, "; 
+	for f in ${PHP_BOOT_SCRIPTS}; do 
+		printf "$f, "; 
+
+		rm -f /usr/local/bin/${f##*/}
+		cp $f /usr/local/bin/
+
+		chmod +x     /usr/local/bin/${f##*/}
+		/bin/bash -c /usr/local/bin/${f##*/}
 	done
 	echo
-	for f in $PHP_BOOT_SCRIPTS; do 
-		/bin/bash -c $f
-	done
 fi
