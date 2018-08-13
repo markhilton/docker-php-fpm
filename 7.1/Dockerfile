@@ -227,7 +227,6 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 #
 
 # install helpful libs
-# RUN apt-get -y install libfcgi0ldbl jq nano supervisor cron
 RUN apt-get -y install libfcgi0ldbl nano cron
 
 # crontab fix: https://stackoverflow.com/questions/43323754/cannot-make-remove-an-entry-for-the-specified-session-cron
