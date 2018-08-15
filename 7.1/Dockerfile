@@ -231,15 +231,17 @@ RUN apt-get -y install libfcgi0ldbl nano cron
 
 # crontab fix: https://stackoverflow.com/questions/43323754/cannot-make-remove-an-entry-for-the-specified-session-cron
 RUN sed -i '/session    required     pam_loginuid.so/c\#session    required   pam_loginuid.so' /etc/pam.d/cron
+# expose /status for health check
+RUN sed -i 's/;pm.status_path = \/status/pm.status_path = \/status/g' /usr/local/etc/php-fpm.d/www.conf
 
 # composer 
 # consider removing to a separate container
-RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer && chmod +x /usr/local/bin/composer
-ENV PATH="$PATH:/root/.composer/vendor/bin"
+# RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer && chmod +x /usr/local/bin/composer
+# ENV PATH="$PATH:/root/.composer/vendor/bin"
 
 # install modman
-RUN curl -s -L https://raw.github.com/colinmollenhour/modman/master/modman-installer | bash && \
-    mv ~/bin/modman /usr/sbin/
+# RUN curl -s -L https://raw.github.com/colinmollenhour/modman/master/modman-installer | bash && \
+#     mv ~/bin/modman /usr/sbin/
 
 # install NewRelic agent
 RUN echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/sources.list.d/newrelic.list && \
@@ -249,11 +251,11 @@ RUN echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/
     export NR_INSTALL_SILENT=1 && newrelic-install install
 
 # install blackfire.io profiler
-RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
-    && curl -A "Docker" -o /tmp/blackfire-probe.tar.gz -D - -L -s https://blackfire.io/api/v1/releases/probe/php/linux/amd64/$version \
-    && tar zxpf /tmp/blackfire-probe.tar.gz -C /tmp \
-    && mv /tmp/blackfire-*.so $(php -r "echo ini_get('extension_dir');")/blackfire.so \
-    && printf "extension=blackfire.so\nblackfire.agent_socket=tcp://blackfire:8707\n" > $PHP_INI_DIR/conf.d/blackfire.ini
+# RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
+#     && curl -A "Docker" -o /tmp/blackfire-probe.tar.gz -D - -L -s https://blackfire.io/api/v1/releases/probe/php/linux/amd64/$version \
+#     && tar zxpf /tmp/blackfire-probe.tar.gz -C /tmp \
+#     && mv /tmp/blackfire-*.so $(php -r "echo ini_get('extension_dir');")/blackfire.so \
+#     && printf "extension=blackfire.so\nblackfire.agent_socket=tcp://blackfire:8707\n" > $PHP_INI_DIR/conf.d/blackfire.ini
 
 # install SendGrid
 RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections && \
