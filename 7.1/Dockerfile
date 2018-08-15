@@ -231,8 +231,12 @@ RUN apt-get -y install libfcgi0ldbl nano cron
 
 # crontab fix: https://stackoverflow.com/questions/43323754/cannot-make-remove-an-entry-for-the-specified-session-cron
 RUN sed -i '/session    required     pam_loginuid.so/c\#session    required   pam_loginuid.so' /etc/pam.d/cron
-# expose /status for health check
-RUN sed -i 's/;pm.status_path = \/status/pm.status_path = \/status/g' /usr/local/etc/php-fpm.d/www.conf
+
+# expose /status for health check & stop access log
+RUN echo "pm.status_path = /status"     >> zz-docker.conf && \
+    echo "ping.path      = /ping"       >> zz-docker.conf && \
+    echo "ping.response  = OK"          >> zz-docker.conf && \
+    echo "access.log = /proc/self/fd/1" >> zz-docker.conf
 
 # composer 
 # consider removing to a separate container
