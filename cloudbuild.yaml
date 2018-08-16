@@ -1,0 +1,14 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['pull', 'php:$BRANCH_NAME-fpm']
+- name: 'gcr.io/crunch-geek/php-fpm:$BRANCH_NAME'
+  args: ['pull', 'gcr.io/$PROJECT_ID/php-fpm:$BRANCH_NAME']
+- name: 'gcr.io/cloud-builders/docker'
+  args: [
+            'build',
+            '-f', '/7.1/Dockerfile',
+            '-t', 'gcr.io/$PROJECT_ID/php-fpm:$BRANCH_NAME',
+            '--cache-from', 'gcr.io/$PROJECT_ID/php-fpm:$BRANCH_NAME',
+            '.'
+        ]
+images: ['gcr.io/$PROJECT_ID/php-fpm:$BRANCH_NAME']
