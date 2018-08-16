@@ -4,9 +4,9 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: [
             'build',
-            '-f', '/workspace/7.1/Dockerfile',
             '-t', 'gcr.io/$PROJECT_ID/php-fpm:$BRANCH_NAME',
             '--cache-from', 'gcr.io/$PROJECT_ID/php-fpm:$BRANCH_NAME',
             '.'
         ]
+  dir: '$BRANCH_NAME'
 images: ['gcr.io/$PROJECT_ID/php-fpm:$BRANCH_NAME']
