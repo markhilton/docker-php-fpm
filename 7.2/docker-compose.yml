@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+
+  php72:
+    image: crunchgeek/php-fpm:7.2
+    restart: always
+    hostname: php72
+    container_name: php72
+    volumes:
+      - ./apps:/apps
+      - ./config:/config
