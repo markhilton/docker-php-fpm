@@ -23,7 +23,7 @@ RUN apt-get update && \
         sqlite3 libsqlite3-dev libxslt-dev \
         libmhash2 libmhash-dev libc-client-dev libkrb5-dev libssh2-1-dev \
         unzip libpcre3 libpcre3-dev \
-        poppler-utils ghostscript libmagickwand-6.q16-dev libsnmp-dev libedit-dev libreadline6-dev libsodium-dev libargon2-0-dev \
+        poppler-utils ghostscript libmagickwand-6.q16-dev libsnmp-dev libedit-dev libreadline6-dev libsodium-dev \
         freetds-bin freetds-dev freetds-common libct4 libsybdb5 tdsodbc libreadline-dev librecode-dev libpspell-dev
 
 # fix for docker-php-ext-install pdo_dblib
