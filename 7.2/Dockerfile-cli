@@ -1,4 +1,4 @@
-FROM php:7.2-fpm
+FROM php:7.2-cli
 
 MAINTAINER Mark Hilton <nerd305@gmail.com>
 
@@ -23,7 +23,7 @@ RUN apt-get update && \
         sqlite3 libsqlite3-dev libxslt-dev \
         libmhash2 libmhash-dev libc-client-dev libkrb5-dev libssh2-1-dev \
         unzip libpcre3 libpcre3-dev \
-        poppler-utils ghostscript libmagickwand-6.q16-dev libsnmp-dev libedit-dev libreadline6-dev libsodium-dev libargon2-0-dev \
+        poppler-utils ghostscript libmagickwand-6.q16-dev libsnmp-dev libedit-dev libreadline6-dev libsodium-dev \
         freetds-bin freetds-dev freetds-common libct4 libsybdb5 tdsodbc libreadline-dev librecode-dev libpspell-dev
 
 # fix for docker-php-ext-install pdo_dblib
@@ -122,7 +122,7 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 #--------------------------------------------------------------------------
 
 # install required libs for health check and cron
-RUN apt-get -y install libfcgi0ldbl nano cron
+RUN apt-get -y install supervisor nano cron
 
 # crontab fix: https://stackoverflow.com/questions/43323754/cannot-make-remove-an-entry-for-the-specified-session-cron
 RUN sed -i '/session    required     pam_loginuid.so/c\#session    required   pam_loginuid.so' /etc/pam.d/cron
@@ -146,8 +146,7 @@ RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections &&
     DEBIAN_FRONTEND=noninteractive apt-get install postfix libsasl2-modules -y
 
 # install shared PHP code
-RUN git clone https://github.com/nrk/predis.git /usr/local/lib/php/predis && \
-    git clone https://github.com/markhilton/redis-http-cache.git /usr/local/lib/php/redis-http-cache
+RUN git clone https://github.com/nrk/predis.git /usr/local/lib/php/predis
 
 # Set default work directory
 ADD scripts/* /usr/local/bin/
@@ -165,11 +164,11 @@ RUN echo "" >> ~/.bashrc && \
 RUN apt-get remove -y git && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Health check
-HEALTHCHECK --interval=5s --timeout=3s \
-    CMD SCRIPT_NAME=/status SCRIPT_FILENAME=/status REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1
+RUN echo '#!/bin/bash' > /healthcheck && \
+    echo 'php -v > /dev/null || exit 1' >> /healthcheck && \
+    chmod +x /healthcheck
 
-ENV PHP_INTERPRETER=php-fpm
-EXPOSE 9000
+HEALTHCHECK --interval=5s --timeout=3s CMD /healthcheck || exit 1
+
+ENV PHP_INTERPRETER=php
 WORKDIR /app
-
-CMD ["php-fpm"]

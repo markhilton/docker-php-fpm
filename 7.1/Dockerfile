@@ -233,10 +233,10 @@ RUN apt-get -y install libfcgi0ldbl nano cron
 RUN sed -i '/session    required     pam_loginuid.so/c\#session    required   pam_loginuid.so' /etc/pam.d/cron
 
 # expose /status for health check & stop access log
-RUN echo "pm.status_path = /status" >> zz-docker.conf && \
-    echo "ping.path      = /ping"   >> zz-docker.conf && \
-    echo "ping.response  = OK"      >> zz-docker.conf && \
-    echo "access.log     = /proc/self/fd/1" >> zz-docker.conf
+RUN echo "pm.status_path = /status" >> /usr/local/etc/php/conf.d/zz-docker.conf && \
+    echo "ping.path      = /ping"   >> /usr/local/etc/php/conf.d/zz-docker.conf && \
+    echo "ping.response  = OK"      >> /usr/local/etc/php/conf.d/zz-docker.conf && \
+    echo "access.log     = /proc/self/fd/1" >> /usr/local/etc/php/conf.d/zz-docker.conf
 
 # composer 
 # consider removing to a separate container

@@ -2,8 +2,8 @@
 Docker container to install and run [PHP-FPM](https://php-fpm.org/).
 
 ## Project Goal
-Build out of the box, multi version, fully loaded PHP-FPM docker images, that can support all my projects. I mosty work with WordPress & Laravel. 
-The images are no light weight. The aim is to support maximum number of features out of the box, that could be easily turn ON/OFF with environment setttings.
+Out of the box, multi-version, fully loaded PHP-FPM docker images, that can support all my PHP projects. I work with WordPress & Laravel. 
+The images are no light weight. The aim is to support maximum number of features out of the box, that could be easily turn ON/OFF with environment settings.
 
 ## Supported branches and respective Dockerfile links
 
@@ -15,58 +15,108 @@ The images are no light weight. The aim is to support maximum number of features
 PHP-FPM (FastCGI Process Manager) is an alternative FastCGI implementation for PHP.
 
 ## Environment variables
+Use following environment variables to configure docker container php process manager during container boot up:
 
-PHP-FPM user configuration, example:
+### [system user](https://manpages.debian.org/stretch/adduser/adduser.8.en.html)
 ```
-PHP_USER=php-fpm
 PHP_UID=1000
 PHP_GID=1000
+PHP_HOME=/app
+PHP_USER=php-fpm
 ```
-will run PHP-FPM daemon as php-fpm user with UID:GID set up as 1000:1000
+will run create a system user called `php-fpm` with UID:GUID 1000:1000 and home directory `/app`, which then can be referenced in your php-fpm manager pool configuration file.
 
-Custom PHP extension ini configurations:
+### [php.ini configuration](http://php.net/manual/en/ini.php)
 ```
-PHP_INI_PATH=/path/to/*.ini
+PHP_INI_PATH=/path/to/php.ini
 ```
-will add additional path to include ini extension configurations.
+will include specified `php.ini` configuration during php-fpm manager start. It allows to use a wildcard in case you would like to include several .ini configuration files.
 
-Custom PHP-FPM pool configurations:
+### [php-fpm pool configurations](http://php.net/manual/en/install.fpm.configuration.php)
 ```
-PHP_POOL_PATH=/path/to/*.conf
+PHP_POOL_PATH=/path/to/pool.conf
 ```
-will add PHP-FPM pools from specified path.
+will include specified `pool.conf` configuration during php-fpm manager start. It allows to use a wildcard in case you would like to include several .conf configuration files.
+**ATTENTION:** default `www.conf` pool configuration will be loaded, unless you specify path to your custom `www.conf`.
 
-Additional container boot scripts:
+### boot scripts
 ```
 PHP_BOOT_SCRIPTS=/path/to/*.sh
 ```
-will run scripts from specified path on container boot.
+will run scripts or a single script from specified path during container boot, before php-fpm manager starts up. Useful in cases when you want to include several pools configurations, where each pool uses a different system user (shared hosting). In those cases you would need to create each system user before php-fom manager starts up. `PHP_BOOT_SCRIPTS` could be use to point to a bash script that will create those system users.
 
-Support for crontabs:
+### [crontabs](http://crontab.org/)
 ```
 PHP_CRONTABS_PATH=/path/to/cronttab_scripts
 ```
-will install scripts located in `/path/to/cronttab_scripts` as crontabs and start crontab daemon inside container
+will install a crontab defined in `/path/to/cronttab_scripts` and start crontab daemon inside container.
 
-NewRelic application monitoring support;
+**example Laravel crontab**
+```
+#
+# Laravel task scheduler
+#
+# ATTENTION: 
+# crontab sh shell requires:
+# - a full path to php cli interpreter
+# - current dir change to laravel artisan
+# - an empty line is required at the end of this file for a valid cron file
+
+* * * * * php-cli   cd /app && /usr/local/bin/php artisan schedule:run
+```
+
+### [NewRelic APM](https://docs.newrelic.com/docs/agents/php-agent/getting-started/introduction-new-relic-php)
 ```
 NEWRELIC_LICENSE=license_string
 ```
-will turn on newrelic extension to monitor PHP application performance
+will turn on NewRelic extension to monitor PHP application performance.
 
-SendGrid support:
+### [SendGrid](https://sendgrid.com/)
 ```
 SMTP_LOGIN=sendgrid_login
 SMTP_PASSWORD=sendgrid_password
 ```
-will update email routing via SendGrid. I use Google Cloud which blocks SMTP port 25 by default. 
+will update default email routing via SendGrid. Google Cloud blocks SMTP port 25 by default, so this could be useful solution to set up an alternative email routing before php-fpm manager starts up.
 
-PHP session handler to support Redis or Memcache:
+### [session handler](http://php.net/manual/en/class.sessionhandler.php)
+to support Redis or Memcached PHP session handler.
 ```
 PHP_SESSION_HANDLER=php_session_handler
 PHP_SESSION_PATH=php_session_path
 ```
-will update default PHP session handler. Useful with cluster environment, to allow shared PHP sessions between cluster participant instances.
+will update default PHP session handler. Useful in cluster environments, to allow shared PHP sessions between cluster instances. 
+
+**[Example Redis session]**(https://www.digitalocean.com/community/tutorials/how-to-set-up-a-redis-server-as-a-session-handler-for-php-on-ubuntu-14-04)
+```
+PHP_SESSION_HANDLER=redis
+PHP_SESSION_PATH=tcp://redis.host:6379
+```
+This will set php.ini global session handler to use Redis server accessible at 
+`redis.host` DNS endpoint name and port 6379.
+
+**[Example Memcached session]**(https://www.digitalocean.com/community/tutorials/how-to-share-php-sessions-on-multiple-memcached-servers-on-ubuntu-14-04)
+```
+PHP_SESSION_HANDLER=memcached
+PHP_SESSION_PATH=memcached.host:11211
+```
+This will set php.ini global session handler to use Memcached server accessible at `memcached.host` DNS endpoint name and port 11211.
+
+### [Supervisord](http://supervisord.org/)
+```
+SUPERVISORD_PATH=/path/to/supervisord.conf
+```
+Allows to control and monitor multiple processes running inside the container. Example use case: ensure that there are minimum 8 simultaniously run Laravel Queues available at any time to process scheduled tasks.
+
+Note that if you use supervisord the container boot script will create a `/healthcheck` file to monitor supervisord main process, which can be used to monitor container health. This example configuration for `docker-compose.yaml` will ensure that container does not exit after boot and redirect supervisord logs into stdout.
+
+```
+    command: [ "tail", '-f', '/var/log/supervisor/supervisord.log' ]
+    healthcheck:
+      test: /healthcheck
+      retries: 3
+      timeout: 5s
+      interval: 5s
+```
 
 ## Installed extensions
 - apc
