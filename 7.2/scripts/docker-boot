@@ -18,11 +18,45 @@ if [ ! -z ${PHP_INI_PATH+x} ] && [ "$PHP_INI_PATH" != "" ]; then
 	echo
 fi
 
+
 ### make sure to create clean php-fpm.conf 
 ### to avoid adding multiple times the same lines next 
 ### in case container is restarting
-echo "[global]"                     >  /usr/local/etc/php-fpm.conf
-echo "include=etc/php-fpm.d/*.conf" >> /usr/local/etc/php-fpm.conf
+echo "[global]"                        >  /usr/local/etc/php-fpm.conf
+echo "include=etc/php-fpm.d/*.conf"    >> /usr/local/etc/php-fpm.conf
+echo "[global]"             > /usr/local/etc/php-fpm.d/zz-docker.conf
+echo "daemonize  = yes"    >> /usr/local/etc/php-fpm.d/zz-docker.conf
+echo "log_level  = notice" >> /usr/local/etc/php-fpm.d/zz-docker.conf
+
+if [ "${PHP_ERROR_LOG,,}" = "off" ]; then
+	echo "env PHP_ERROR_LOG: OFF"
+	echo "error_log  = /proc/self/fd/1" >> /usr/local/etc/php-fpm.d/zz-docker.conf
+else
+	echo "env PHP_ERROR_LOG: ON"
+	echo "error_log  = /tmp/stdout.log" >> /usr/local/etc/php-fpm.d/zz-docker.conf
+fi
+
+echo "[www]" >> /usr/local/etc/php-fpm.d/zz-docker.conf
+
+if [ "${PHP_ACCESS_LOG,,}" = "on" ]; then
+	echo "env PHP_ACCESS_LOG: ON"
+	echo "access.log = /tmp/stdout.log" >> /usr/local/etc/php-fpm.d/zz-docker.conf
+else
+	echo "env PHP_ACCESS_LOG: OFF"
+	echo "access.log = /proc/self/fd/1" >> /usr/local/etc/php-fpm.d/zz-docker.conf
+fi
+
+if [ "${PHP_ERROR_LOG,,}" = "on" ]; then
+	echo "php_admin_value[log_errors]         = On"              >> /usr/local/etc/php-fpm.d/zz-docker.conf
+	echo "php_admin_value[error_log]          = /tmp/stdout.log" >> /usr/local/etc/php-fpm.d/zz-docker.conf
+	echo "php_admin_value[opcache.error_log]  = /tmp/stdout.log" >> /usr/local/etc/php-fpm.d/zz-docker.conf
+fi
+
+# expose /status for health check & stop access log
+echo "pm.status_path = /status" >> /usr/local/etc/php-fpm.d/zz-docker.conf
+echo "ping.path      = /ping"   >> /usr/local/etc/php-fpm.d/zz-docker.conf
+echo "ping.response  = OK"      >> /usr/local/etc/php-fpm.d/zz-docker.conf
+
 
 ### remove default www.conf pool
 ### and load PHP-FPM pool configurations

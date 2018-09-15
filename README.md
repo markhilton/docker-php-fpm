@@ -118,6 +118,18 @@ Note that if you use supervisord the container boot script will create a `/healt
       interval: 5s
 ```
 
+### php access log (on|off)
+```
+PHP_ACCESS_LOG=off
+```
+turns on|off php access log to docker container stdout.
+
+### php error log (on|off)
+```
+PHP_ERROR_LOG=on
+```
+turns on|off php error log to docker container stdout.
+
 ## Installed extensions
 - apc
 - apcu

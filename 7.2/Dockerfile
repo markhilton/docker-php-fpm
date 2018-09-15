@@ -8,8 +8,6 @@ RUN apt-get update && \
         libmemcached-dev \
         libz-dev \
         libpq-dev \
-        libjpeg-dev \
-        libfreetype6-dev \
         libssl-dev libssl-doc libsasl2-dev \
         libmcrypt-dev \
         libxml2-dev \
@@ -18,7 +16,10 @@ RUN apt-get update && \
         curl libcurl4-openssl-dev \
         libenchant-dev libgmp-dev firebird-dev libib-util \
         re2c libpng++-dev \
-        libjpeg62-turbo-dev libjpeg-dev libvpx-dev zlib1g-dev libgd-dev \
+        libwebp-dev libjpeg-dev libjpeg62-turbo-dev libpng-dev libvpx-dev libfreetype6-dev \
+        libmagick++-dev \
+        libmagickwand-dev \
+        zlib1g-dev libgd-dev \
         libtidy-dev libxslt1-dev libmagic-dev libexif-dev file \
         sqlite3 libsqlite3-dev libxslt-dev \
         libmhash2 libmhash-dev libc-client-dev libkrb5-dev libssh2-1-dev \
@@ -33,13 +34,11 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libsybdb.so /usr/lib/
 RUN docker-php-ext-configure hash --with-mhash && \
     docker-php-ext-install hash
 RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl && \
-    docker-php-ext-install imap
-RUN docker-php-ext-configure gd --with-jpeg-dir=/usr/lib --with-freetype-dir=/usr/include/freetype2 && \
-    docker-php-ext-install gd
+    docker-php-ext-install imap iconv
 
 RUN docker-php-ext-install bcmath bz2 calendar ctype curl dba dom enchant 
 RUN docker-php-ext-install fileinfo exif ftp gd gettext gmp 
-RUN docker-php-ext-install iconv interbase intl json ldap mbstring mysqli 
+RUN docker-php-ext-install interbase intl json ldap mbstring mysqli 
 RUN docker-php-ext-install opcache pcntl pspell
 RUN docker-php-ext-install pdo pdo_dblib pdo_mysql pdo_pgsql pdo_sqlite pgsql phar posix 
 RUN docker-php-ext-install readline recode 
@@ -81,14 +80,14 @@ RUN set -x \
     && ./configure --with-php-config=/usr/local/bin/php-config \
     && make \
     && make install \
-    && echo "extension=memcache.so" > /usr/local/etc/php/conf.d/ext-memcache.ini \
+    && echo "extension=memcache.so" > /usr/local/etc/php-fpm.d/docker-php-ext-memcache.ini \
     && rm -rf /tmp/pecl-memcache-php7 php7.zip
 
 # install APCu
 RUN pecl install apcu-5.1.8 && \
     pecl install apcu_bc-1.0.3 && \
-    docker-php-ext-enable apcu --ini-name 10-docker-php-ext-apcu.ini && \
-    docker-php-ext-enable apc --ini-name 20-docker-php-ext-apc.ini
+    docker-php-ext-enable apcu --ini-name docker-php-ext-10-apcu.ini && \
+    docker-php-ext-enable apc  --ini-name docker-php-ext-20-apc.ini
 
 # oracle database 
 # RUN curl -o /tmp/instantclient-sdk.zip   -L https://github.com/bumpx/oracle-instantclient/raw/master/instantclient-sdk-linux.x64-12.1.0.2.0.zip && \
@@ -111,6 +110,16 @@ RUN set -xe \
     && docker-php-ext-enable pdo_sqlsrv \
     && apt-get purge -y unixodbc-dev && apt-get autoremove -y && apt-get clean
 
+# install GD
+RUN docker-php-ext-configure gd \
+        --enable-gd-native-ttf \
+        --with-png-dir=/usr/include \
+        --with-jpeg-dir=/usr/lib/x86_64-linux-gnu \
+        --with-xpm-dir=/usr/include \
+        --with-webp-dir=/usr/include \
+        --with-freetype-dir=/usr/include && \
+    docker-php-ext-install -j$(nproc) gd
+
 # set locale to utf-8
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
@@ -122,16 +131,10 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 #--------------------------------------------------------------------------
 
 # install required libs for health check and cron
-RUN apt-get -y install libfcgi0ldbl nano cron
+RUN apt-get -y install libfcgi0ldbl supervisor nano cron
 
 # crontab fix: https://stackoverflow.com/questions/43323754/cannot-make-remove-an-entry-for-the-specified-session-cron
 RUN sed -i '/session    required     pam_loginuid.so/c\#session    required   pam_loginuid.so' /etc/pam.d/cron
-
-# expose /status for health check & stop access log
-RUN echo "pm.status_path = /status" >> /usr/local/etc/php/conf.d/zz-docker.conf && \
-    echo "ping.path      = /ping"   >> /usr/local/etc/php/conf.d/zz-docker.conf && \
-    echo "ping.response  = OK"      >> /usr/local/etc/php/conf.d/zz-docker.conf && \
-    echo "access.log     = /proc/self/fd/1" >> /usr/local/etc/php/conf.d/zz-docker.conf
 
 # install NewRelic agent
 RUN echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/sources.list.d/newrelic.list && \
@@ -164,12 +167,16 @@ RUN echo "" >> ~/.bashrc && \
 # Clean up
 RUN apt-get remove -y git && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# allow all processes to write to the same log
+RUN touch /tmp/stdout.log && \
+    chmod u+rw,g+rw,o+rw /tmp/stdout.log
+
 # Health check
-HEALTHCHECK --interval=5s --timeout=3s \
-    CMD SCRIPT_NAME=/status SCRIPT_FILENAME=/status REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1
+RUN echo '#!/bin/bash' > /healthcheck && \
+    echo 'php -v > /dev/null || exit 1' >> /healthcheck && \
+    echo 'SCRIPT_NAME=/status SCRIPT_FILENAME=/status REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000' >> /healthcheck && \
+    chmod +x /healthcheck
 
-ENV PHP_INTERPRETER=php-fpm
-EXPOSE 9000
+HEALTHCHECK --interval=5s --timeout=3s CMD /healthcheck || exit 1
+
 WORKDIR /app
-
-CMD ["php-fpm"]

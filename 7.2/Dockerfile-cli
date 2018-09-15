@@ -1,4 +1,4 @@
-FROM php:7.2-cli
+FROM php:7.2-fpm
 
 MAINTAINER Mark Hilton <nerd305@gmail.com>
 
@@ -81,14 +81,14 @@ RUN set -x \
     && ./configure --with-php-config=/usr/local/bin/php-config \
     && make \
     && make install \
-    && echo "extension=memcache.so" > /usr/local/etc/php/conf.d/ext-memcache.ini \
+    && echo "extension=memcache.so" > /usr/local/etc/php/conf.d/docker-php-ext-memcache.ini \
     && rm -rf /tmp/pecl-memcache-php7 php7.zip
 
 # install APCu
 RUN pecl install apcu-5.1.8 && \
     pecl install apcu_bc-1.0.3 && \
-    docker-php-ext-enable apcu --ini-name 10-docker-php-ext-apcu.ini && \
-    docker-php-ext-enable apc --ini-name 20-docker-php-ext-apc.ini
+    docker-php-ext-enable apcu --ini-name docker-php-ext-10-apcu.ini && \
+    docker-php-ext-enable apc --ini-name docker-php-ext-20-apc.ini
 
 # oracle database 
 # RUN curl -o /tmp/instantclient-sdk.zip   -L https://github.com/bumpx/oracle-instantclient/raw/master/instantclient-sdk-linux.x64-12.1.0.2.0.zip && \
@@ -122,7 +122,7 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 #--------------------------------------------------------------------------
 
 # install required libs for health check and cron
-RUN apt-get -y install supervisor nano cron
+RUN apt-get -y install libfcgi0ldbl supervisor nano cron
 
 # crontab fix: https://stackoverflow.com/questions/43323754/cannot-make-remove-an-entry-for-the-specified-session-cron
 RUN sed -i '/session    required     pam_loginuid.so/c\#session    required   pam_loginuid.so' /etc/pam.d/cron
@@ -131,7 +131,7 @@ RUN sed -i '/session    required     pam_loginuid.so/c\#session    required   pa
 RUN echo "pm.status_path = /status" >> /usr/local/etc/php/conf.d/zz-docker.conf && \
     echo "ping.path      = /ping"   >> /usr/local/etc/php/conf.d/zz-docker.conf && \
     echo "ping.response  = OK"      >> /usr/local/etc/php/conf.d/zz-docker.conf && \
-    echo "access.log     = /proc/self/fd/1" >> /usr/local/etc/php/conf.d/zz-docker.conf
+    echo "log_level      = notice"  >> /usr/local/etc/php/conf.d/zz-docker.conf
 
 # install NewRelic agent
 RUN echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/sources.list.d/newrelic.list && \
@@ -146,7 +146,8 @@ RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections &&
     DEBIAN_FRONTEND=noninteractive apt-get install postfix libsasl2-modules -y
 
 # install shared PHP code
-RUN git clone https://github.com/nrk/predis.git /usr/local/lib/php/predis
+RUN git clone https://github.com/nrk/predis.git /usr/local/lib/php/predis && \
+    git clone https://github.com/markhilton/redis-http-cache.git /usr/local/lib/php/redis-http-cache
 
 # Set default work directory
 ADD scripts/* /usr/local/bin/
@@ -164,11 +165,7 @@ RUN echo "" >> ~/.bashrc && \
 RUN apt-get remove -y git && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Health check
-RUN echo '#!/bin/bash' > /healthcheck && \
-    echo 'php -v > /dev/null || exit 1' >> /healthcheck && \
-    chmod +x /healthcheck
+HEALTHCHECK --interval=5s --timeout=3s \
+    CMD SCRIPT_NAME=/status SCRIPT_FILENAME=/status REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1
 
-HEALTHCHECK --interval=5s --timeout=3s CMD /healthcheck || exit 1
-
-ENV PHP_INTERPRETER=php
 WORKDIR /app

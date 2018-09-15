@@ -9,10 +9,10 @@ if [ ! -z ${SUPERVISORD_PATH+x} ] && [ "$SUPERVISORD_PATH" != "" ]; then
 	cp $SUPERVISORD_PATH /etc/supervisor/conf.d/
 
 # overwrite default supervisord config to disable unix_http_server & supervisorctl
-	export SUPERVISORD_CONF=/etc/supervisor/supervisord.conf
+	SUPERVISORD_CONF=/etc/supervisor/supervisord.conf
 
 	echo "[supervisord]" > $SUPERVISORD_CONF
-	echo "logfile=/var/log/supervisor/supervisord.log" >> $SUPERVISORD_CONF
+	echo "logfile=/tmp/stdout.log" >> $SUPERVISORD_CONF
 	echo "childlogdir=/var/log/supervisor"  >> $SUPERVISORD_CONF
 	echo "pidfile=/var/run/supervisord.pid" >> $SUPERVISORD_CONF
 	echo "[rpcinterface:supervisor]" >> $SUPERVISORD_CONF
@@ -27,9 +27,4 @@ if [ ! -z ${SUPERVISORD_PATH+x} ] && [ "$SUPERVISORD_PATH" != "" ]; then
 
 # start supervisord
 	/usr/bin/python /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
-
-# IMPORTANT: allow write to supervisord.log by php-cli
-# supervisord suspends next docker-boot steps
-	chmod u+rw,g+rw,o+rw /var/log/supervisor/supervisord.log
-	tail -f /var/log/supervisor/supervisord.log
 fi
