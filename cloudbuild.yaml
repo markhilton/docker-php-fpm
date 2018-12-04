@@ -1,12 +1,30 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['pull', 'gcr.io/$PROJECT_ID/php-fpm:$BRANCH_NAME']
+  args: ['pull', 'gcr.io/$PROJECT_ID/$_IMAGE:$BRANCH_NAME']
 - name: 'gcr.io/cloud-builders/docker'
   args: [
             'build',
-            '-t', 'gcr.io/$PROJECT_ID/php-fpm:$BRANCH_NAME',
-            '--cache-from', 'gcr.io/$PROJECT_ID/php-fpm:$BRANCH_NAME',
+            '-t', 'gcr.io/$PROJECT_ID/$_IMAGE:$BRANCH_NAME',
+            '--cache-from', 'gcr.io/$PROJECT_ID/$_IMAGE:$BRANCH_NAME',
             '.'
         ]
   dir: '$BRANCH_NAME'
-images: ['gcr.io/$PROJECT_ID/php-fpm:$BRANCH_NAME']
+
+# slack deployment status
+- name: 'gcr.io/cloud-builders/curl'
+  args:
+      [
+          '-X',
+          'POST',
+          '-H',
+          'Content-type: application/json',
+          '--data',
+          '{"text":"${_IMAGE} build completed!"}',
+          '${_WEBHOOK_URL}',
+      ]
+
+# extend timeout to 20 min
+timeout: 1200s
+
+# store artifact
+images: ['gcr.io/$PROJECT_ID/$_IMAGE:$BRANCH_NAME']
