@@ -100,9 +100,9 @@ RUN apt-get install -y libssh2-1-dev && \
 
 # php-module: curl dom bz2 gd json mysqli pcntl pdo pdo_mysql phar posix
 RUN apt-get install -y libxml2-dev libbz2-dev re2c libpng++-dev \
-                      libpng3 libjpeg-dev libvpx-dev zlib1g-dev libgd-dev \
-                      libtidy-dev libxslt1-dev libmagic-dev libexif-dev file \
-                      sqlite3 libsqlite3-dev libxslt-dev
+    libjpeg-dev libvpx-dev zlib1g-dev libgd-dev \
+    libtidy-dev libxslt1-dev libmagic-dev libexif-dev file \
+    sqlite3 libsqlite3-dev libxslt-dev
 
 RUN export CFLAGS="-I/usr/src/php" && \
     docker-php-ext-install xmlreader xmlwriter
@@ -192,7 +192,7 @@ RUN pecl install apcu-5.1.8 && \
 
 # install MSSQL support
 # install ODBC driver
-RUN apt-get update -y && apt-get install -y apt-transport-https locales
+RUN apt-get update -y && apt-get install -y gnupg apt-transport-https locales
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
     curl https://packages.microsoft.com/config/debian/8/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
     export DEBIAN_FRONTEND=noninteractive && apt-get update -y && \
