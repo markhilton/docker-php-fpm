@@ -4,18 +4,17 @@
 if [ ! -z ${PHP_USER+x} ] && [ ! -z ${PHP_UID+x} ] && [ ! -z ${PHP_GID+x} ] && [ ! -z ${PHP_HOME+x} ] && [ "$PHP_USER" != "" ] && [ "$PHP_UID" != "" ] && [ "$PHP_GID" != "" ] && [ "$PHP_HOME" != "" ]; then
 	echo "env PHP_USER: creating new system user: ${PHP_USER} ${PHP_UID}:${PHP_GID} ${PHP_HOME}"
 	groupadd -f $PHP_USER -g $PHP_GID && \
-    useradd  -d $PHP_HOME -u $PHP_UID -g $PHP_GID -s /bin/false $PHP_USER
+   useradd  -d $PHP_HOME -u $PHP_UID -g $PHP_GID -s /bin/false $PHP_USER
 fi
 
 ### load PHP ini configurations
 if [ ! -z ${PHP_INI_PATH+x} ] && [ "$PHP_INI_PATH" != "" ]; then
-	printf "env PHP_INI_PATH: "
+	printf "env PHP_INI_PATH:\n"
 	for f in ${PHP_INI_PATH}; do
-		printf "$f, ";
+		printf " - $f\n";
 		rm -f /usr/local/etc/php/conf.d/${f##*/}
 		cp $f /usr/local/etc/php/conf.d/
 	done
-	echo
 fi
 
 
@@ -61,9 +60,9 @@ echo "ping.response  = OK"      >> /usr/local/etc/php-fpm.d/zz-docker.conf
 ### remove default www.conf pool
 ### and load PHP-FPM pool configurations
 if [ ! -z ${PHP_POOL_PATH+x} ] && [ "$PHP_POOL_PATH" != "" ]; then
-	printf "env PHP_POOL_PATH: "
+	printf "env PHP_POOL_PATH:\n"
 	for f in ${PHP_POOL_PATH}; do
-		printf "$f, ";
+		printf " - $f\n";
 		rm -f /usr/local/etc/php-fpm.d/${f##*/}
 		cp $f /usr/local/etc/php-fpm.d/
 	done
@@ -79,10 +78,10 @@ done
 
 ### load bash scripts
 if [ ! -z ${PHP_BOOT_SCRIPTS+x} ] && [ "$PHP_BOOT_SCRIPTS" != "" ]; then
-	printf "env PHP_BOOT_SCRIPTS: "
+	printf "env PHP_BOOT_SCRIPTS:\n"
 
 	for f in ${PHP_BOOT_SCRIPTS}; do
-		printf "$f, ";
+		printf " - $f\n";
 
 		rm -f /usr/local/bin/${f##*/}
 		cp $f /usr/local/bin/
