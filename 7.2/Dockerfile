@@ -1,30 +1,28 @@
 FROM php:7.2-fpm
 
-MAINTAINER Mark Hilton <nerd305@gmail.com>
-
-RUN apt-get update && \
+RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
-        git \
-        libmemcached-dev \
-        libz-dev \
-        libpq-dev \
-        libjpeg-dev \
-        libfreetype6-dev \
-        libssl-dev libssl-doc libsasl2-dev \
-        libmcrypt-dev \
-        libxml2-dev \
-        zlib1g-dev libicu-dev g++ \
-        libldap2-dev libbz2-dev \
-        curl libcurl4-openssl-dev \
-        libenchant-dev libgmp-dev firebird-dev libib-util \
-        re2c libpng++-dev \
-        libjpeg62-turbo-dev libjpeg-dev libvpx-dev zlib1g-dev libgd-dev \
-        libtidy-dev libxslt1-dev libmagic-dev libexif-dev file \
-        sqlite3 libsqlite3-dev libxslt-dev \
-        libmhash2 libmhash-dev libc-client-dev libkrb5-dev libssh2-1-dev \
-        unzip libpcre3 libpcre3-dev \
-        poppler-utils ghostscript libmagickwand-6.q16-dev libsnmp-dev libedit-dev libreadline6-dev libsodium-dev \
-        freetds-bin freetds-dev freetds-common libct4 libsybdb5 tdsodbc libreadline-dev librecode-dev libpspell-dev
+    git \
+    libmemcached-dev \
+    libz-dev \
+    libpq-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libssl-dev libssl-doc libsasl2-dev \
+    libmcrypt-dev \
+    libxml2-dev \
+    zlib1g-dev libicu-dev g++ \
+    libldap2-dev libbz2-dev \
+    curl libcurl4-openssl-dev \
+    libenchant-dev libgmp-dev firebird-dev libib-util \
+    re2c libpng++-dev \
+    libjpeg62-turbo-dev libjpeg-dev libvpx-dev zlib1g-dev libgd-dev \
+    libtidy-dev libxslt1-dev libmagic-dev libexif-dev file \
+    sqlite3 libsqlite3-dev libxslt-dev \
+    libmhash2 libmhash-dev libc-client-dev libkrb5-dev libssh2-1-dev \
+    unzip libpcre3 libpcre3-dev \
+    poppler-utils ghostscript libmagickwand-6.q16-dev libsnmp-dev libedit-dev libreadline6-dev libsodium-dev \
+    freetds-bin freetds-dev freetds-common libct4 libsybdb5 tdsodbc libreadline-dev librecode-dev libpspell-dev
 
 # fix for docker-php-ext-install pdo_dblib
 # https://stackoverflow.com/questions/43617752/docker-php-and-freetds-cannot-find-freetds-in-know-installation-directories
@@ -37,14 +35,14 @@ RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl && \
 RUN docker-php-ext-configure gd --with-jpeg-dir=/usr/lib --with-freetype-dir=/usr/include/freetype2 && \
     docker-php-ext-install gd
 
-RUN docker-php-ext-install bcmath bz2 calendar ctype curl dba dom enchant 
-RUN docker-php-ext-install fileinfo exif ftp gd gettext gmp 
-RUN docker-php-ext-install iconv interbase intl json ldap mbstring mysqli 
+RUN docker-php-ext-install bcmath bz2 calendar ctype curl dba dom enchant
+RUN docker-php-ext-install fileinfo exif ftp gd gettext gmp
+RUN docker-php-ext-install iconv interbase intl json ldap mbstring mysqli
 RUN docker-php-ext-install opcache pcntl pspell
-RUN docker-php-ext-install pdo pdo_dblib pdo_mysql pdo_pgsql pdo_sqlite pgsql phar posix 
-RUN docker-php-ext-install readline recode 
-RUN docker-php-ext-install session shmop simplexml soap sockets sodium 
-RUN docker-php-ext-install sysvmsg sysvsem sysvshm 
+RUN docker-php-ext-install pdo pdo_dblib pdo_mysql pdo_pgsql pdo_sqlite pgsql phar posix
+RUN docker-php-ext-install readline recode
+RUN docker-php-ext-install session shmop simplexml soap sockets sodium
+RUN docker-php-ext-install sysvmsg sysvsem sysvshm
 # RUN docker-php-ext-install snmp
 
 # fix for docker-php-ext-install xmlreader
@@ -54,8 +52,8 @@ RUN export CFLAGS="-I/usr/src/php" && docker-php-ext-install xmlreader xmlwriter
 RUN docker-php-ext-install tidy tokenizer wddx zend_test zip
 
 # already build in... what they say...
-# RUN docker-php-ext-install filter reflection spl standard 
-# RUN docker-php-ext-install pdo_firebird pdo_oci 
+# RUN docker-php-ext-install filter reflection spl standard
+# RUN docker-php-ext-install pdo_firebird pdo_oci
 
 # install pecl extension
 RUN pecl install ds && \
@@ -90,7 +88,7 @@ RUN pecl install apcu-5.1.8 && \
     docker-php-ext-enable apcu --ini-name 10-docker-php-ext-apcu.ini && \
     docker-php-ext-enable apc --ini-name 20-docker-php-ext-apc.ini
 
-# oracle database 
+# oracle database
 # RUN curl -o /tmp/instantclient-sdk.zip   -L https://github.com/bumpx/oracle-instantclient/raw/master/instantclient-sdk-linux.x64-12.1.0.2.0.zip && \
 #     curl -o /tmp/instantclient-basic.zip -L https://github.com/bumpx/oracle-instantclient/raw/master/instantclient-basic-linux.x64-12.1.0.2.0.zip
 # RUN unzip /tmp/instantclient-basic.zip -d /usr/local/ && \

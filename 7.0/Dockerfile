@@ -1,26 +1,24 @@
 FROM php:7.0-fpm
 
-MAINTAINER Mark Hilton <nerd305@gmail.com>
-
-RUN apt-get update && \
+RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
-        git \
-        libmemcached-dev \
-        libz-dev \
-        libpq-dev \
-        libjpeg-dev \
-        libfreetype6-dev \
-        libssl-dev \
-        libmcrypt-dev
+    git \
+    libmemcached-dev \
+    libz-dev \
+    libpq-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libssl-dev \
+    libmcrypt-dev
 
 RUN docker-php-ext-install mcrypt
 RUN docker-php-ext-install mysqli pdo_mysql
 
 # install the PHP gd library
 RUN docker-php-ext-configure gd \
-        --enable-gd-native-ttf \
-        --with-jpeg-dir=/usr/lib \
-        --with-freetype-dir=/usr/include/freetype2 && \
+    --enable-gd-native-ttf \
+    --with-jpeg-dir=/usr/lib \
+    --with-freetype-dir=/usr/include/freetype2 && \
     docker-php-ext-install gd
 
 # install the soap extension
@@ -142,7 +140,7 @@ RUN docker-php-ext-install \
     ftp \
     sysvmsg \
     sysvsem \
-    sysvshm    
+    sysvshm
 
 # install the php memcache & memcached extension
 RUN set -x \
@@ -162,11 +160,11 @@ RUN curl -L -o /tmp/memcached.tar.gz "https://github.com/php-memcached-dev/php-m
     && mkdir -p memcached \
     && tar -C memcached -zxvf /tmp/memcached.tar.gz --strip 1 \
     && ( \
-        cd memcached \
-        && phpize \
-        && ./configure \
-        && make -j$(nproc) \
-        && make install \
+    cd memcached \
+    && phpize \
+    && ./configure \
+    && make -j$(nproc) \
+    && make install \
     ) \
     && rm -r memcached \
     && rm /tmp/memcached.tar.gz \
