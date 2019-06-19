@@ -128,6 +128,9 @@ WORKDIR /usr/local/etc/php-fpm.d
 # Final Touches
 #--------------------------------------------------------------------------
 
+# install required libs for health check
+RUN apt-get -y install libfcgi0ldbl
+
 # install NewRelic agent
 RUN echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/sources.list.d/newrelic.list && \
 	curl https://download.newrelic.com/548C16BF.gpg | apt-key add - && \
@@ -147,6 +150,11 @@ RUN git clone https://github.com/nrk/predis.git /usr/local/lib/php/predis && \
 # Set default work directory
 ADD scripts/* /usr/local/bin/
 RUN chmod +x  /usr/local/bin/*
+
+# Health check
+RUN echo '#!/bin/bash' > /healthcheck && \
+	echo 'SCRIPT_NAME=/health SCRIPT_FILENAME=/health REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1' >> /healthcheck && \
+	chmod +x /healthcheck
 
 # Clean up
 RUN apt-get remove -y git && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
