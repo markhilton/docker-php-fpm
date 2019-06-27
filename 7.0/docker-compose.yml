@@ -1,7 +1,6 @@
 version: '3'
 
 services:
-
   php70:
     build:
       context: ./
@@ -9,9 +8,5 @@ services:
     hostname: php70
     container_name: php70
     volumes:
-      - /tmp:/apps
-      - /tmp/pending:/cfgs
-    environment:
-      - PHP_INI_PATH=/cfgs/_php-7.0.ini
-      - PHP_POOL_PATH=/cfgs/*.php-7.0.conf
-      - PHP_BOOT_SCRIPTS=/cfgs/*.php-7.0.sh
+      - ./configs:/cfgs
+    env_file: .env

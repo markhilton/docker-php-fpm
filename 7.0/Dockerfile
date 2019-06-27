@@ -188,42 +188,30 @@ RUN pecl install apcu-5.1.8 && \
     docker-php-ext-enable apcu --ini-name 10-docker-php-ext-apcu.ini && \
     docker-php-ext-enable apc --ini-name 20-docker-php-ext-apc.ini
 
+RUN apt-get update -y && apt-get install -y gnupg apt-transport-https locales
+
 # install MSSQL support
 # install ODBC driver
-RUN apt-get update -y && apt-get install -y gnupg apt-transport-https locales
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
-    curl https://packages.microsoft.com/config/debian/8/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
-    export DEBIAN_FRONTEND=noninteractive && apt-get update -y && \
-    ACCEPT_EULA=Y apt-get install -y msodbcsql unixodbc-dev
-RUN set -xe \
-    && pecl install pdo_sqlsrv \
-    && docker-php-ext-enable pdo_sqlsrv \
-    && apt-get purge -y unixodbc-dev && apt-get autoremove -y && apt-get clean
+#RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
+#    curl https://packages.microsoft.com/config/debian/8/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
+#    export DEBIAN_FRONTEND=noninteractive && apt-get update -y && \
+#    ACCEPT_EULA=Y apt-get install -y msodbcsql unixodbc-dev
+#RUN set -xe \
+#    && pecl install pdo_sqlsrv \
+#    && docker-php-ext-enable pdo_sqlsrv \
+#    && apt-get purge -y unixodbc-dev && apt-get autoremove -y && apt-get clean
 
 # set locale to utf-8
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-
-#
 #--------------------------------------------------------------------------
 # Final Touches
 #--------------------------------------------------------------------------
-#
 
-# install helpful libs
-RUN apt-get -y install libfcgi0ldbl jq nano supervisor mysql-client cron redis-tools
-
-# crontab fix: https://stackoverflow.com/questions/43323754/cannot-make-remove-an-entry-for-the-specified-session-cron
-RUN sed -i '/session    required     pam_loginuid.so/c\#session    required   pam_loginuid.so' /etc/pam.d/cron
-
-# composer
-RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer && chmod +x /usr/local/bin/composer
-
-# install modman
-RUN curl -s -L https://raw.github.com/colinmollenhour/modman/master/modman-installer | bash && \
-    mv ~/bin/modman /usr/sbin/
+# install required libs for health check
+RUN apt-get -y install libfcgi0ldbl
 
 # install NewRelic agent
 RUN echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/sources.list.d/newrelic.list && \
@@ -232,13 +220,6 @@ RUN echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/
     DEBIAN_FRONTEND=noninteractive apt-get -y install newrelic-php5 newrelic-sysmond && \
     export NR_INSTALL_SILENT=1 && newrelic-install install
 
-# install blackfire.io profiler
-RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
-    && curl -A "Docker" -o /tmp/blackfire-probe.tar.gz -D - -L -s https://blackfire.io/api/v1/releases/probe/php/linux/amd64/$version \
-    && tar zxpf /tmp/blackfire-probe.tar.gz -C /tmp \
-    && mv /tmp/blackfire-*.so $(php -r "echo ini_get('extension_dir');")/blackfire.so \
-    && printf "extension=blackfire.so\nblackfire.agent_socket=tcp://blackfire:8707\n" > $PHP_INI_DIR/conf.d/blackfire.ini
-
 # install SendGrid
 RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections && \
     echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
@@ -246,30 +227,16 @@ RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections &&
 
 # install shared PHP code
 RUN git clone https://github.com/nrk/predis.git /usr/local/lib/php/predis && \
-    git clone https://github.com/markhilton/redis-http-cache.git /usr/local/lib/php/redis-http-cache && \
-    cd /usr/local/lib/php/redis-http-cache && git checkout tags/1.0.0
+    git clone https://github.com/markhilton/redis-http-cache.git /usr/local/lib/php/redis-http-cache
 
 # Set default work directory
 ADD scripts/* /usr/local/bin/
 RUN chmod +x  /usr/local/bin/*
 
-# install aliases
-RUN echo "" >> ~/.bashrc && \
-    echo "# Load Custom Aliases" >> ~/.bashrc && \
-    echo "source /usr/local/bin/aliases.sh" >> ~/.bashrc && \
-    echo "" >> ~/.bashrc && \
-    sed -i 's/\r//' /usr/local/bin/aliases.sh && \
-    sed -i 's/^#! \/bin\/sh/#! \/bin\/bash/' /usr/local/bin/aliases.sh
+# Health check
+RUN echo '#!/bin/bash' > /healthcheck && \
+    echo 'SCRIPT_NAME=/health SCRIPT_FILENAME=/health REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1' >> /healthcheck && \
+    chmod +x /healthcheck
 
 # Clean up
-RUN apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# Health check
-HEALTHCHECK --interval=10s --timeout=5s \
-    CMD SCRIPT_NAME=/status SCRIPT_FILENAME=/status REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1
-
-WORKDIR /var/www
-
-EXPOSE 9000
-
-CMD ["php-fpm"]
+RUN apt-get remove -y git && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

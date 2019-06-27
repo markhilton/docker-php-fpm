@@ -58,12 +58,14 @@ RUN docker-php-ext-install tidy tokenizer wddx zend_test zip
 RUN pecl install ds && \
 	pecl install imagick && \
 	pecl install igbinary && \
-	pecl install mongodb && \
 	pecl install ssh2-1.0 && \
 	pecl install redis-4.0.1 && \
-	pecl install xdebug-2.6.0 && \
 	pecl install memcached-3.0.4 && \
-	docker-php-ext-enable ds imagick igbinary ssh2 redis memcached mongodb xdebug
+	docker-php-ext-enable ds imagick igbinary ssh2 redis memcached
+
+# install pecl extension
+# RUN pecl install mongodb xdebug-2.6.0 && \
+# docker-php-ext-enable mongodb xdebug
 
 RUN yes "" | pecl install msgpack && \
 	docker-php-ext-enable msgpack
@@ -97,16 +99,17 @@ RUN pecl install apcu-5.1.8 && \
 #     docker-php-ext-configure oci8 --with-oci8=instantclient,/usr/local/instantclient && \
 #     docker-php-ext-install oci8
 
-# install MSSQL support and ODBC driver
 RUN apt-get update -y && apt-get install -y apt-transport-https locales gnupg
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
-	curl https://packages.microsoft.com/config/debian/8/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
-	export DEBIAN_FRONTEND=noninteractive && apt-get update -y && \
-	ACCEPT_EULA=Y apt-get install -y msodbcsql unixodbc-dev
-RUN set -xe \
-	&& pecl install pdo_sqlsrv \
-	&& docker-php-ext-enable pdo_sqlsrv \
-	&& apt-get purge -y unixodbc-dev && apt-get autoremove -y && apt-get clean
+
+# install MSSQL support and ODBC driver
+# RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
+# 	curl https://packages.microsoft.com/config/debian/8/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
+# 	export DEBIAN_FRONTEND=noninteractive && apt-get update -y && \
+# 	ACCEPT_EULA=Y apt-get install -y msodbcsql unixodbc-dev
+# RUN set -xe \
+# 	&& pecl install pdo_sqlsrv \
+# 	&& docker-php-ext-enable pdo_sqlsrv \
+# 	&& apt-get purge -y unixodbc-dev && apt-get autoremove -y && apt-get clean
 
 # install GD
 RUN docker-php-ext-configure gd \
@@ -121,8 +124,6 @@ RUN docker-php-ext-configure gd \
 # set locale to utf-8
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
-
-WORKDIR /usr/local/etc/php-fpm.d
 
 #--------------------------------------------------------------------------
 # Final Touches
@@ -144,8 +145,8 @@ RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections &&
 	DEBIAN_FRONTEND=noninteractive apt-get install postfix libsasl2-modules -y
 
 # install shared PHP code
-RUN git clone https://github.com/nrk/predis.git /usr/local/lib/php/predis && \
-	git clone https://github.com/markhilton/redis-http-cache.git /usr/local/lib/php/redis-http-cache
+# RUN git clone https://github.com/nrk/predis.git /usr/local/lib/php/predis && \
+# 	git clone https://github.com/markhilton/redis-http-cache.git /usr/local/lib/php/redis-http-cache
 
 # Set default work directory
 ADD scripts/* /usr/local/bin/
