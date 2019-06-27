@@ -130,7 +130,7 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 #--------------------------------------------------------------------------
 
 # install required libs for health check
-RUN apt-get -y install libfcgi0ldbl
+RUN apt-get -y install libfcgi0ldbl nano htop iotop lsof
 
 # install NewRelic agent
 RUN echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/sources.list.d/newrelic.list && \
