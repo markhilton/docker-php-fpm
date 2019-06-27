@@ -64,8 +64,10 @@ RUN pecl install ds && \
 	docker-php-ext-enable ds imagick igbinary ssh2 redis memcached
 
 # install pecl extension
-# RUN pecl install mongodb xdebug-2.6.0 && \
-# docker-php-ext-enable mongodb xdebug
+RUN pecl install mongodb && docker-php-ext-enable mongodb
+
+# install xdebug
+# RUN pecl install xdebug && docker-php-ext-enable xdebug
 
 RUN yes "" | pecl install msgpack && \
 	docker-php-ext-enable msgpack

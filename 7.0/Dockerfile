@@ -32,8 +32,7 @@ RUN pecl install -o -f redis \
    &&  docker-php-ext-enable redis
 
 # install the mongodb extension
-RUN pecl install mongodb && \
-   docker-php-ext-enable mongodb
+RUN pecl install mongodb && docker-php-ext-enable mongodb
 
 # install bcmath, mbstring and zip extensions
 RUN docker-php-ext-install bcmath && \
