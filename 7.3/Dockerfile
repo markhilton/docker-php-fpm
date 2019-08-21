@@ -1,7 +1,9 @@
-FROM php:7.2-fpm
+FROM php:7.3-fpm
 
-RUN apt-get update && \
-	apt-get install -y --no-install-recommends \
+RUN apt-get update -y
+RUN apt-get -y install gcc make autoconf libc-dev pkg-config libzip-dev
+
+RUN apt-get install -y --no-install-recommends \
 	git \
 	libmemcached-dev \
 	libz-dev \
@@ -58,45 +60,26 @@ RUN docker-php-ext-install tidy tokenizer wddx zend_test zip
 RUN pecl install ds && \
 	pecl install imagick && \
 	pecl install igbinary && \
-	pecl install ssh2-1.0 && \
-	pecl install redis-4.0.1 && \
-	pecl install memcached-3.0.4 && \
-	docker-php-ext-enable ds imagick igbinary ssh2 redis memcached
+	pecl install redis && \
+	pecl install memcached && \
+	docker-php-ext-enable ds imagick igbinary redis memcached
+
+# https://serverpilot.io/docs/how-to-install-the-php-ssh2-extension
+# 	pecl install ssh2-1.1.2 && \
+# docker-php-ext-enable ssh2
 
 # install pecl extension
 RUN pecl install mongodb && docker-php-ext-enable mongodb
 
+# install xdebug
+# RUN pecl install xdebug && docker-php-ext-enable xdebug
+
 RUN yes "" | pecl install msgpack && \
 	docker-php-ext-enable msgpack
 
-# install the php memcache extension
-RUN set -x \
-	&& cd /tmp \
-	&& curl -sSL -o php7.zip https://github.com/websupport-sk/pecl-memcache/archive/php7.zip \
-	&& unzip php7 \
-	&& cd pecl-memcache-php7 \
-	&& /usr/local/bin/phpize \
-	&& ./configure --with-php-config=/usr/local/bin/php-config \
-	&& make \
-	&& make install \
-	&& echo "extension=memcache.so" > /usr/local/etc/php/conf.d/docker-php-ext-memcache.ini \
-	&& rm -rf /tmp/pecl-memcache-php7 php7.zip
-
 # install APCu
-RUN pecl install apcu-5.1.8 && \
-	pecl install apcu_bc-1.0.3 && \
-	docker-php-ext-enable apcu --ini-name docker-php-ext-10-apcu.ini && \
-	docker-php-ext-enable apc  --ini-name docker-php-ext-20-apc.ini
-
-# oracle database
-# RUN curl -o /tmp/instantclient-sdk.zip   -L https://github.com/bumpx/oracle-instantclient/raw/master/instantclient-sdk-linux.x64-12.1.0.2.0.zip && \
-#     curl -o /tmp/instantclient-basic.zip -L https://github.com/bumpx/oracle-instantclient/raw/master/instantclient-basic-linux.x64-12.1.0.2.0.zip
-# RUN unzip /tmp/instantclient-basic.zip -d /usr/local/ && \
-#     unzip /tmp/instantclient-sdk.zip -d /usr/local/ && \
-#     ln -s /usr/local/instantclient_12_1 /usr/local/instantclient && \
-#     ln -s /usr/local/instantclient/libclntsh.so.12.1 /usr/local/instantclient/libclntsh.so && \
-#     docker-php-ext-configure oci8 --with-oci8=instantclient,/usr/local/instantclient && \
-#     docker-php-ext-install oci8
+RUN pecl install apcu && \
+	docker-php-ext-enable apcu --ini-name docker-php-ext-10-apcu.ini
 
 RUN apt-get update -y && apt-get install -y apt-transport-https locales gnupg
 
@@ -117,18 +100,13 @@ RUN docker-php-ext-configure gd \
 	--with-jpeg-dir=/usr/lib/x86_64-linux-gnu \
 	--with-xpm-dir=/usr/include \
 	--with-webp-dir=/usr/include \
-	--with-freetype-dir=/usr/include && \
-	docker-php-ext-install -j$(nproc) gd
+	&& docker-php-ext-install -j$(nproc) gd
+
+# 	--with-freetype-dir=/usr/include && \
 
 # set locale to utf-8
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
-
-#RUN pecl install stackdriver_debugger-alpha \
-#	&& echo "extension=stackdriver_debugger.so" > /usr/local/etc/php/conf.d/docker-php-ext-stackdriver_debugger.ini
-
-# install xdebug
-RUN pecl install xdebug && docker-php-ext-enable xdebug
 
 #--------------------------------------------------------------------------
 # Final Touches
@@ -148,10 +126,6 @@ RUN echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/
 RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections && \
 	echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
 	DEBIAN_FRONTEND=noninteractive apt-get install postfix libsasl2-modules -y
-
-# install shared PHP code
-# RUN git clone https://github.com/nrk/predis.git /usr/local/lib/php/predis && \
-# 	git clone https://github.com/markhilton/redis-http-cache.git /usr/local/lib/php/redis-http-cache
 
 # Set default work directory
 ADD scripts/* /usr/local/bin/

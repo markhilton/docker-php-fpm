@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  php72:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    hostname: php72
+    container_name: php72
+    volumes:
+      - ./configs:/cfgs
+    env_file: .env

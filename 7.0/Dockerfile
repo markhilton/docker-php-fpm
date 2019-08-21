@@ -224,10 +224,6 @@ RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections &&
    echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
    DEBIAN_FRONTEND=noninteractive apt-get install postfix libsasl2-modules -y
 
-# # install shared PHP code
-# RUN git clone https://github.com/nrk/predis.git /usr/local/lib/php/predis && \
-#     git clone https://github.com/markhilton/redis-http-cache.git /usr/local/lib/php/redis-http-cache
-
 # Set default work directory
 ADD scripts/* /usr/local/bin/
 RUN chmod +x  /usr/local/bin/*
