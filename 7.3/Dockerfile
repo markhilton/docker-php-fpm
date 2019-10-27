@@ -37,7 +37,7 @@ RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl && \
 	docker-php-ext-install imap iconv
 
 RUN docker-php-ext-install bcmath bz2 calendar ctype curl dba dom enchant
-RUN docker-php-ext-install fileinfo exif ftp gd gettext gmp
+RUN docker-php-ext-install fileinfo exif ftp gettext gmp
 RUN docker-php-ext-install interbase intl json ldap mbstring mysqli
 RUN docker-php-ext-install opcache pcntl pspell
 RUN docker-php-ext-install pdo pdo_dblib pdo_mysql pdo_pgsql pdo_sqlite pgsql phar posix
@@ -93,16 +93,17 @@ RUN apt-get update -y && apt-get install -y apt-transport-https locales gnupg
 # 	&& docker-php-ext-enable pdo_sqlsrv \
 # 	&& apt-get purge -y unixodbc-dev && apt-get autoremove -y && apt-get clean
 
+# RUN docker-php-ext-configure spl && docker-php-ext-install spl
+
 # install GD
 RUN docker-php-ext-configure gd \
-	--enable-gd-native-ttf \
-	--with-png-dir=/usr/include \
-	--with-jpeg-dir=/usr/lib/x86_64-linux-gnu \
-	--with-xpm-dir=/usr/include \
-	--with-webp-dir=/usr/include \
+	--with-png-dir \
+	--with-jpeg-dir \
+	--with-xpm-dir \
+	--with-webp-dir \
+	--with-freetype-dir \
 	&& docker-php-ext-install -j$(nproc) gd
 
-# 	--with-freetype-dir=/usr/include && \
 
 # set locale to utf-8
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
@@ -130,6 +131,10 @@ RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections &&
 # Set default work directory
 ADD scripts/* /usr/local/bin/
 RUN chmod +x  /usr/local/bin/*
+
+# Add default configuration files
+ADD configs/php.ini /usr/local/etc/php/
+ADD configs/www.conf /usr/local/etc/php-fpm.d/
 
 # Health check
 RUN echo '#!/bin/bash' > /healthcheck && \
