@@ -6,22 +6,22 @@
 if [ ! "$PHP_USER" == "" ] && [ ! "$PHP_UID" == "" ] && [ ! "$PHP_GID" == "" ] && [ ! "$PHP_HOME" == "" ]; then
 	echo "env PHP_USER: creating new system user: ${PHP_USER} ${PHP_UID}:${PHP_GID} ${PHP_HOME}"
 	groupadd -f $PHP_USER -g $PHP_GID && \
-    useradd  -d $PHP_HOME -u $PHP_UID -g $PHP_GID -s /bin/false $PHP_USER
+  useradd  -d $PHP_HOME -u $PHP_UID -g $PHP_GID -s /bin/false $PHP_USER
 fi
 
 ### load PHP ini configurations
 if [ ! "$PHP_INI_PATH" == "" ]; then
 	printf "env PHP_INI_PATH: "
-	for f in ${PHP_INI_PATH}; do 
-		printf "$f, "; 
+	for f in ${PHP_INI_PATH}; do
+		printf "$f, ";
 		rm -f /usr/local/etc/php/conf.d/${f##*/}
 		cp $f /usr/local/etc/php/conf.d/
 	done
 	echo
 fi
 
-### make sure to create clean php-fpm.conf 
-### to avoid adding multiple times the same lines next 
+### make sure to create clean php-fpm.conf
+### to avoid adding multiple times the same lines next
 ### in case container is restarting
 echo "[global]"                     >  /usr/local/etc/php-fpm.conf
 echo "include=etc/php-fpm.d/*.conf" >> /usr/local/etc/php-fpm.conf
@@ -29,8 +29,8 @@ echo "include=etc/php-fpm.d/*.conf" >> /usr/local/etc/php-fpm.conf
 ### load PHP-FPM pool configurations
 if [ ! "$PHP_POOL_PATH" == "" ]; then
 	printf "env PHP_POOL_PATH: "
-	for f in ${PHP_POOL_PATH}; do 
-		printf "$f, "; 
+	for f in ${PHP_POOL_PATH}; do
+		printf "$f, ";
 		rm -f /usr/local/etc/php-fpm.d/${f##*/}
 		cp $f /usr/local/etc/php-fpm.d/
 	done
@@ -39,18 +39,18 @@ if [ ! "$PHP_POOL_PATH" == "" ]; then
 fi
 
 ### load boot bash scripts
-for f in /usr/local/bin/*.sh; do 
+for f in /usr/local/bin/*.sh; do
 	/bin/bash -c $f
 done
 
 ### load bash scripts
 if [ ! "$PHP_BOOT_SCRIPTS" == "" ]; then
 	printf "env PHP_BOOT_SCRIPTS: "
-	for f in $PHP_BOOT_SCRIPTS; do 
-		printf "${f##*/}, "; 
+	for f in $PHP_BOOT_SCRIPTS; do
+		printf "${f##*/}, ";
 	done
 	echo
-	for f in $PHP_BOOT_SCRIPTS; do 
+	for f in $PHP_BOOT_SCRIPTS; do
 		/bin/bash -c $f
 	done
 fi

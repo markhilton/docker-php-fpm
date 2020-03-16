@@ -275,7 +275,7 @@ version: '3'
 services:
   php-fpm:
     container_name: php-fpm
-    image: crunchgeek/php-fpm:7.2
+    image: crunchgeek/php-fpm:7.3
     entrypoint: php index.php
     volumes:
       - /path/to/your/app:/app

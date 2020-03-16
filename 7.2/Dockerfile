@@ -14,7 +14,7 @@ RUN apt-get update && \
 	curl libcurl4-openssl-dev \
 	libenchant-dev libgmp-dev firebird-dev libib-util \
 	re2c libpng++-dev \
-	libwebp-dev libjpeg-dev libjpeg62-turbo-dev libpng-dev libvpx-dev libfreetype6-dev \
+	libwebp-dev libjpeg-dev libjpeg62-turbo-dev libpng-dev libxpm-dev libvpx-dev libfreetype6-dev \
 	libmagick++-dev \
 	libmagickwand-dev \
 	zlib1g-dev libgd-dev \
@@ -112,13 +112,14 @@ RUN apt-get update -y && apt-get install -y apt-transport-https locales gnupg
 
 # install GD
 RUN docker-php-ext-configure gd \
-	--enable-gd-native-ttf \
-	--with-png-dir=/usr/include \
-	--with-jpeg-dir=/usr/lib/x86_64-linux-gnu \
-	--with-xpm-dir=/usr/include \
-	--with-webp-dir=/usr/include \
-	--with-freetype-dir=/usr/include && \
-	docker-php-ext-install -j$(nproc) gd
+	--with-gd \
+	--with-webp-dir \
+	--with-jpeg-dir \
+	--with-png-dir \
+	--with-zlib-dir \
+	--with-xpm-dir \
+	--with-freetype-dir && \
+	docker-php-ext-install gd
 
 # set locale to utf-8
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
@@ -135,7 +136,15 @@ RUN pecl install xdebug && docker-php-ext-enable xdebug
 #--------------------------------------------------------------------------
 
 # install required libs for health check
-RUN apt-get -y install libfcgi0ldbl nano htop iotop lsof
+RUN apt-get -y install libfcgi0ldbl nano htop iotop lsof cron mariadb-client redis-tools
+
+# install composer
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+	&& php -r "if (hash_file('sha384', 'composer-setup.php') === 'e0012edf3e80b6978849f5eff0d4b4e4c79ff1609dd1e613307e16318854d24ae64f26d17af3ef0bf7cfb710ca74755a') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" \
+	&& php composer-setup.php \
+	&& php -r "unlink('composer-setup.php');" \
+	&& mv composer.phar /usr/local/sbin/composer \
+	&& chmod +x /usr/local/sbin/composer
 
 # install NewRelic agent
 RUN echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/sources.list.d/newrelic.list && \
@@ -148,10 +157,6 @@ RUN echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/
 RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections && \
 	echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
 	DEBIAN_FRONTEND=noninteractive apt-get install postfix libsasl2-modules -y
-
-# install shared PHP code
-# RUN git clone https://github.com/nrk/predis.git /usr/local/lib/php/predis && \
-# 	git clone https://github.com/markhilton/redis-http-cache.git /usr/local/lib/php/redis-http-cache
 
 # Set default work directory
 ADD scripts/* /usr/local/bin/

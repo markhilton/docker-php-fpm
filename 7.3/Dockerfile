@@ -16,7 +16,7 @@ RUN apt-get install -y --no-install-recommends \
 	curl libcurl4-openssl-dev \
 	libenchant-dev libgmp-dev firebird-dev libib-util \
 	re2c libpng++-dev \
-	libwebp-dev libjpeg-dev libjpeg62-turbo-dev libpng-dev libvpx-dev libfreetype6-dev \
+	libwebp-dev libjpeg-dev libjpeg62-turbo-dev libpng-dev libxpm-dev libvpx-dev libfreetype6-dev \
 	libmagick++-dev \
 	libmagickwand-dev \
 	zlib1g-dev libgd-dev \
@@ -104,7 +104,6 @@ RUN docker-php-ext-configure gd \
 	--with-freetype-dir \
 	&& docker-php-ext-install -j$(nproc) gd
 
-
 # set locale to utf-8
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
@@ -114,11 +113,11 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 #--------------------------------------------------------------------------
 
 # install required libs for health check
-RUN apt-get -y install libfcgi0ldbl nano htop iotop lsof mariadb-client
+RUN apt-get -y install libfcgi0ldbl nano htop iotop lsof cron mariadb-client redis-tools
 
 # install composer
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
-	&& php -r "if (hash_file('sha384', 'composer-setup.php') === 'baf1608c33254d00611ac1705c1d9958c817a1a33bce370c0595974b342601bd80b92a3f46067da89e3b06bff421f182') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" \
+	&& php -r "if (hash_file('sha384', 'composer-setup.php') === 'e0012edf3e80b6978849f5eff0d4b4e4c79ff1609dd1e613307e16318854d24ae64f26d17af3ef0bf7cfb710ca74755a') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" \
 	&& php composer-setup.php \
 	&& php -r "unlink('composer-setup.php');" \
 	&& mv composer.phar /usr/local/sbin/composer \
@@ -146,7 +145,7 @@ ADD configs/www.conf /usr/local/etc/php-fpm.d/
 
 # Health check
 RUN echo '#!/bin/bash' > /healthcheck && \
-	echo 'SCRIPT_NAME=/health SCRIPT_FILENAME=/health REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1' >> /healthcheck && \
+	echo 'env -i SCRIPT_NAME=/health SCRIPT_FILENAME=/health REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1' >> /healthcheck && \
 	chmod +x /healthcheck
 
 # Clean up
