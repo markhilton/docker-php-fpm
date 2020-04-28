@@ -10,16 +10,17 @@ if [ ! "$PHP_USER" == "" ] && [ ! "$PHP_UID" == "" ] && [ ! "$PHP_GID" == "" ] &
   useradd  -d $PHP_HOME -u $PHP_UID -g $PHP_GID -s /usr/sbin/nologin $PHP_USER
 fi
 
+
 ### load PHP ini configurations
 if [ ! "$PHP_INI_PATH" == "" ]; then
-	printf "env PHP_INI_PATH: "
+	echo "env PHP_INI_PATH: copy from [ $PHP_INI_PATH ] into [ /usr/local/etc/php/conf.d/ ] folder"
 	for f in ${PHP_INI_PATH}; do
-		printf "$f, ";
+		echo " - $f";
 		rm -f /usr/local/etc/php/conf.d/${f##*/}
 		cp $f /usr/local/etc/php/conf.d/
 	done
-	echo "into [ /usr/local/etc/php/conf.d/ ] folder..."
 fi
+
 
 ### make sure to create clean php-fpm.conf
 ### to avoid adding multiple times the same lines next
@@ -29,14 +30,33 @@ echo "include=etc/php-fpm.d/*.conf" >> /usr/local/etc/php-fpm.conf
 
 ### load PHP-FPM pool configurations
 if [ ! "$PHP_POOL_PATH" == "" ]; then
-	printf "env PHP_POOL_PATH: "
+	echo "env PHP_POOL_PATH: copy from [ $PHP_POOL_PATH ] into [ /usr/local/etc/php-fpm.d/ ] folder"
 	for f in ${PHP_POOL_PATH}; do
-		printf "$f, ";
+		echo " - $f";
 		rm -f /usr/local/etc/php-fpm.d/${f##*/}
 		cp $f /usr/local/etc/php-fpm.d/
 	done
-	echo "into [ /usr/local/etc/php-fpm.d/ ] folder..."
 fi
+
+
+### scan for config files in folders from PHP_INI_SCAN_DIR
+if [ ! -z ${PHP_INI_SCAN_DIR+x} ] && [ "$PHP_INI_SCAN_DIR" != "" ] ; then
+   echo "env PHP_INI_SCAN_DIR: copy from [ $PHP_INI_SCAN_DIR ] into [ /usr/local/etc/php-fpm.d/ ] folder"
+
+   ### break down path by : separator
+   IFS=':' read -ra DIRECTORIES <<< "$PHP_INI_SCAN_DIR"
+
+   for DIR in "${DIRECTORIES[@]}"; do
+      ### check if there are any php pool configuration files to copy
+      COUNT=`ls -1 $DIR/*.conf 2>/dev/null | wc -l`
+
+      if [ $COUNT != "0" ] ; then
+				echo " - $DIR/*.conf";
+        cp -f $DIR/*.conf /usr/local/etc/php-fpm.d/
+      fi
+   done
+fi
+
 
 ### load boot bash scripts
 for f in /usr/local/bin/*.sh; do
@@ -45,18 +65,16 @@ done
 
 ### load additional on-demand scripts
 if [ ! -z ${PHP_BOOT_SCRIPTS+x} ] && [ "$PHP_BOOT_SCRIPTS" != "" ]; then
-	printf "env PHP_BOOT_SCRIPTS: "
+	echo "env PHP_BOOT_SCRIPTS: executing scripts in [ $PHP_BOOT_SCRIPTS ]"
 
 	for f in ${PHP_BOOT_SCRIPTS}; do
-		printf "$f, ";
+		echo " - $f";
 
 		rm -f /usr/local/bin/${f##*/}
 		cp $f /usr/local/bin/
 
 		chmod +x /usr/local/bin/${f##*/}
 	done
-
-	echo
 
 	for f in ${PHP_BOOT_SCRIPTS}; do
 		/bin/bash -c /usr/local/bin/${f##*/}

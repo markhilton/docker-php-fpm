@@ -5,8 +5,13 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
+    depends_on:
+      - redis
     hostname: php73
     container_name: php73
     volumes:
       - ./configs:/cfgs
     env_file: .env
+
+  redis:
+    image: redis:latest

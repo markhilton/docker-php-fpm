@@ -32,8 +32,7 @@ if (isset($_SERVER['argc'])) {
 }
 
 // Write the log
-$stdout = fopen('php://stdout', 'w');
-fwrite($stdout, (isset($_ENV['USER']) ? $_ENV['USER'] . ' ' : '') . $logline . ' - ' . $command . "\n");
+error_log("Email sent: " . $logline);
 
 // Execute the command
 return shell_exec($command);

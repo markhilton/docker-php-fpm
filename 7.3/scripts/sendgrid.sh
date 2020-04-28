@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ ! -z ${SMTP_LOGIN+x} ] && [ ! -z ${SMTP_PASSWORD+x} ] && [ "$SMTP_LOGIN" != "" ] && [ "$SMTP_PASSWORD" != "" ]; then
+if [ ! -z ${SENDGRID_API_KEY+x} ] && [ "$SENDGRID_API_KEY" != "" ]; then
 	echo "env SMTP_LOGIN: sendgrid credentials for email routing";
-	echo "[smtp.sendgrid.net]:2525 ${SMTP_LOGIN}:${SMTP_PASSWORD}" > /etc/postfix/sasl_passwd
+    echo "[smtp.sendgrid.net]:2525 apikey:${SENDGRID_API_KEY}" > /etc/postfix/sasl_passwd
 
 	postmap /etc/postfix/sasl_passwd
 	chmod 600 /etc/postfix/sasl_passwd.db
@@ -29,4 +29,10 @@ if [ ! -z ${SMTP_LOGIN+x} ] && [ ! -z ${SMTP_PASSWORD+x} ] && [ "$SMTP_LOGIN" !=
     echo "smtp_sasl_security_options = noanonymous"                >> /etc/postfix/main.cf
 
 	/etc/init.d/postfix start > /dev/null
+
+    ### send test email if TEST_EMAIL env variable is set
+    if [ ! -z ${TEST_EMAIL+x} ] && [ "$TEST_EMAIL" != "" ]; then
+        echo " - sending test email to: [ $TEST_EMAIL ]";
+        php /usr/local/bin/emailtest.php
+    fi
 fi

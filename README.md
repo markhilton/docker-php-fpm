@@ -24,7 +24,7 @@ Use following environment variables to configure docker container php process ma
 
 ### [system user](https://manpages.debian.org/stretch/adduser/adduser.8.en.html)
 
-```
+```bash
 PHP_UID=1000
 PHP_GID=1000
 PHP_HOME=/app
@@ -35,7 +35,7 @@ will run create a system user called `php-fpm` with UID:GUID 1000:1000 and home 
 
 ### [php.ini configuration](http://php.net/manual/en/ini.php)
 
-```
+```bash
 PHP_INI_PATH=/path/to/php.ini
 ```
 
@@ -43,7 +43,7 @@ will include specified `php.ini` configuration during php-fpm manager start. It 
 
 ### [php-fpm pool configurations](http://php.net/manual/en/install.fpm.configuration.php)
 
-```
+```bash
 PHP_POOL_PATH=/path/to/pool.conf
 ```
 
@@ -52,7 +52,7 @@ will include specified `pool.conf` configuration during php-fpm manager start. I
 
 ### boot scripts
 
-```
+```bash
 PHP_BOOT_SCRIPTS=/path/to/*.sh
 ```
 
@@ -60,7 +60,7 @@ will run scripts or a single script from specified path during container boot, b
 
 ### [crontabs](http://crontab.org/)
 
-```
+```bash
 PHP_CRONTABS_PATH=/path/to/cronttab_scripts
 ```
 
@@ -68,7 +68,7 @@ will install a crontab defined in `/path/to/cronttab_scripts` and start crontab 
 
 **example Laravel crontab**
 
-```
+```bash
 #
 # Laravel task scheduler
 #
@@ -83,7 +83,7 @@ will install a crontab defined in `/path/to/cronttab_scripts` and start crontab 
 
 ### [NewRelic APM](https://docs.newrelic.com/docs/agents/php-agent/getting-started/introduction-new-relic-php)
 
-```
+```bash
 NEWRELIC_LICENSE=license_string
 ```
 
@@ -91,18 +91,34 @@ will turn on NewRelic extension to monitor PHP application performance.
 
 ### [SendGrid](https://sendgrid.com/)
 
-```
+starting from latest 7.3 container the Sendgrid login & password credentials are deprecated in favor of API key.
+
+_deprecated:_
+
+```bash
 SMTP_LOGIN=sendgrid_login
 SMTP_PASSWORD=sendgrid_password
 ```
 
+_in favor of API key:_
+
+```bash
+SENDGRID_API_KEY=api_key_string
+```
+
 will update default email routing via SendGrid. Google Cloud blocks SMTP port 25 by default, so this could be useful solution to set up an alternative email routing before php-fpm manager starts up.
+
+```bash
+TEST_EMAIL=email@domain.com
+```
+
+if set, on container boot the test script will send an email using PHP mail function to given recipient address.
 
 ### [session handler](http://php.net/manual/en/class.sessionhandler.php)
 
 to support Redis or Memcached PHP session handler.
 
-```
+```bash
 PHP_SESSION_HANDLER=php_session_handler
 PHP_SESSION_PATH=php_session_path
 ```
@@ -111,7 +127,7 @@ will update default PHP session handler. Useful in cluster environments, to allo
 
 **[Example Redis session]**(https://www.digitalocean.com/community/tutorials/how-to-set-up-a-redis-server-as-a-session-handler-for-php-on-ubuntu-14-04)
 
-```
+```bash
 PHP_SESSION_HANDLER=redis
 PHP_SESSION_PATH=tcp://redis.host:6379
 ```
@@ -121,7 +137,7 @@ This will set php.ini global session handler to use Redis server accessible at
 
 **[Example Memcached session]**(https://www.digitalocean.com/community/tutorials/how-to-share-php-sessions-on-multiple-memcached-servers-on-ubuntu-14-04)
 
-```
+```bash
 PHP_SESSION_HANDLER=memcached
 PHP_SESSION_PATH=memcached.host:11211
 ```
@@ -130,7 +146,7 @@ This will set php.ini global session handler to use Memcached server accessible 
 
 ### [Supervisord](http://supervisord.org/)
 
-```
+```bash
 SUPERVISORD_PATH=/path/to/supervisord.conf
 ```
 
@@ -138,7 +154,7 @@ Allows to control and monitor multiple processes running inside the container. E
 
 Note that if you use supervisord the container boot script will create a `/healthcheck` file to monitor supervisord main process, which can be used to monitor container health. This example configuration for `docker-compose.yaml` will ensure that container does not exit after boot and redirect supervisord logs into stdout.
 
-```
+```bash
     command: [ "tail", '-f', '/var/log/supervisor/supervisord.log' ]
     healthcheck:
       test: /healthcheck
@@ -149,7 +165,7 @@ Note that if you use supervisord the container boot script will create a `/healt
 
 ### php access log (on|off)
 
-```
+```bash
 PHP_ACCESS_LOG=off
 ```
 
@@ -157,7 +173,7 @@ turns on|off php access log to docker container stdout.
 
 ### php error log (on|off)
 
-```
+```bash
 PHP_ERROR_LOG=on
 ```
 
