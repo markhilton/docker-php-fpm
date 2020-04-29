@@ -2,6 +2,7 @@
 
 if [ ! "$PHP_CRONTABS_PATH" == "" ]; then
 	echo "env CRONTABS_PATH: setting up crontabs [ $PHP_CRONTABS_PATH ]:";
+
 	for f in ${PHP_CRONTABS_PATH}; do
 		echo " - $f";
 		rm -f /etc/cron.d/${f##*/}
