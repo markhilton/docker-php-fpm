@@ -1,12 +1,17 @@
-version: '3'
+version: "3"
 
 services:
   php70:
     build:
       context: ./
       dockerfile: Dockerfile
+    depends_on:
+      - redis
     hostname: php70
     container_name: php70
     volumes:
       - ./configs:/cfgs
     env_file: .env
+
+  redis:
+    image: redis:latest
