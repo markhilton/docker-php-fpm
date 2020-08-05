@@ -9,6 +9,7 @@ The images are no light weight. The aim is to support maximum number of features
 
 ## Supported branches and respective Dockerfile links
 
+-   7.4 [Dockerfile](https://github.com/markhilton/docker-php-fpm/blob/master/7.4/Dockerfile)
 -   7.3 [Dockerfile](https://github.com/markhilton/docker-php-fpm/blob/master/7.3/Dockerfile)
 -   7.2 [Dockerfile](https://github.com/markhilton/docker-php-fpm/blob/master/7.2/Dockerfile)
 -   7.1 [Dockerfile](https://github.com/markhilton/docker-php-fpm/blob/master/7.1/Dockerfile)
@@ -314,3 +315,15 @@ docker logs php-fpm
 ```sh
 docker run --rm -it crunchgeek/php-fpm:7.2 php -m
 ```
+
+# Release Notes
+
+## PHP-FPM 7.4
+
+Extensions that failed to build from 7.3 to [7.4](https://www.php.net/ChangeLog-7.php):
+
+-   mhash (Implemented RFC: The hash extension is now an integral part of PHP and cannot be disabled)
+-   interbase (Unbundled the InterBase extension and moved it to PECL)
+-   recode (Unbundled the recode extension)
+-   wddx (Deprecated and unbundled the WDDX extension)
+-   docker-php-ext-configure gd --with-png [only PNG](https://github.com/docker-library/php/issues/912)
