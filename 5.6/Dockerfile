@@ -102,7 +102,9 @@ RUN echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/
     export NR_INSTALL_SILENT=1 && newrelic-install install
 
 # Install required libraries
-RUN apt-get -y install libfcgi0ldbl git mysql-client cron redis-tools
+RUN apt-get -y install libfcgi0ldbl git mysql-client cron redis-tools supervisor
+
+
 
 # install sendgrid mail routing
 RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections && \
@@ -159,10 +161,5 @@ COPY scripts/* /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/*
 
-# Health check
-RUN sed -i '/pm.status_path/c\pm.status_path = /status' /usr/local/etc/php-fpm.d/www.conf && \
-    sed -i '/ping.path/c\ping.path = /health'           /usr/local/etc/php-fpm.d/www.conf && \
-    sed -i '/ping.response/c\;ping.response = OK'       /usr/local/etc/php-fpm.d/www.conf
 
-HEALTHCHECK --interval=10s --timeout=5s \
-    CMD SCRIPT_NAME=/health SCRIPT_FILENAME=/health REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1
+
