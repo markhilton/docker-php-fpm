@@ -1,7 +1,5 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['pull', 'gcr.io/$PROJECT_ID/$_IMAGE:$BRANCH_NAME$TAG_NAME']
-- name: 'gcr.io/cloud-builders/docker'
   args: [
             'build',
             '-t', 'gcr.io/$PROJECT_ID/$_IMAGE:$BRANCH_NAME$TAG_NAME',
