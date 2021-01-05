@@ -8,7 +8,7 @@ steps:
           '-H',
           'Content-type: application/json',
           '--data',
-          '{"text":"${_IMAGE}:${_VERSION}-${BRANCH_NAME}${TAG_NAME} build started!"}',
+          '{"text":"gcr.io/${PROJECT_ID}/${_IMAGE}:${_VERSION}-${BRANCH_NAME}${TAG_NAME} build started!"}',
           '${_WEBHOOK_URL}',
       ]
 
@@ -24,7 +24,7 @@ steps:
           '-H',
           'Content-type: application/json',
           '--data',
-          '{"text":"${_IMAGE}:${_VERSION}-${BRANCH_NAME}${TAG_NAME} build completed!"}',
+          '{"text":"gcr.io/${PROJECT_ID}/${_IMAGE}:${_VERSION}-${BRANCH_NAME}${TAG_NAME} build completed!"}',
           '${_WEBHOOK_URL}',
       ]
 
