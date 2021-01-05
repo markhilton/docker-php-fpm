@@ -1,12 +1,6 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: [
-            'build',
-            '-t', 'gcr.io/$PROJECT_ID/$_IMAGE:$BRANCH_NAME$TAG_NAME',
-            '--cache-from', 'gcr.io/$PROJECT_ID/$_IMAGE:$BRANCH_NAME$TAG_NAME',
-            '.'
-        ]
-  dir: '$BRANCH_NAME'
+  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/$_IMAGE:$BRANCH_NAME$TAG_NAME', '.' ]
 
 # slack deployment status
 - name: 'gcr.io/cloud-builders/curl'
