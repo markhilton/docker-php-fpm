@@ -114,7 +114,7 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 #--------------------------------------------------------------------------
 
 # install required libs for health check
-RUN apt-get -y install libfcgi0ldbl nano htop iotop lsof cron mariadb-client redis-tools
+RUN apt-get -y install libfcgi0ldbl nano htop iotop lsof cron mariadb-client redis-tools wget
 
 # install composer
 RUN EXPECTED_CHECKSUM="$(wget -q -O - https://composer.github.io/installer.sig)" && \
