@@ -1,19 +1,6 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/php-fpm:7.0-$BRANCH_NAME$TAG_NAME', '-f', '7.0/Dockerfile', '.' ]
-  dir: '$BRANCH_NAME$TAG_NAME'
-
-- name: 'gcr.io/cloud-builders/docker'
-  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/php-fpm:7.2-$BRANCH_NAME$TAG_NAME', '-f', '7.2/Dockerfile', '.' ]
-  dir: '$BRANCH_NAME$TAG_NAME'
-
-- name: 'gcr.io/cloud-builders/docker'
-  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/php-fpm:7.3-$BRANCH_NAME$TAG_NAME', '-f', '7.3/Dockerfile', '.' ]
-  dir: '$BRANCH_NAME$TAG_NAME'
-
-- name: 'gcr.io/cloud-builders/docker'
-  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/php-fpm:7.4-$BRANCH_NAME$TAG_NAME', '-f', '7.4/Dockerfile', '.' ]
-  dir: '$BRANCH_NAME$TAG_NAME'
+  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/php-fpm:$_VERSION-$BRANCH_NAME$TAG_NAME', '-f', '$_VERSION/Dockerfile', '.' ]
 
 # slack deployment status
 - name: 'gcr.io/cloud-builders/curl'
@@ -33,3 +20,8 @@ timeout: 1200s
 
 # store artifact
 images: ['gcr.io/$PROJECT_ID/$_IMAGE:$BRANCH_NAME$TAG_NAME']
+
+# arguments
+substitutions:
+  _VERSION: php_version # PHP runtime version
+  _WEBHOOK_URL: slack_notification_webhook # slack notifications
