@@ -8,12 +8,12 @@ steps:
           '-H',
           'Content-type: application/json',
           '--data',
-          '{"text":"gcr.io/${PROJECT_ID}/${_IMAGE}:${_VERSION}-${BRANCH_NAME}${TAG_NAME} build started!"}',
+          '{"text":"gcr.io/${PROJECT_ID}/${_IMAGE}:${_VERSION}${BRANCH_NAME}${TAG_NAME} build started!"}',
           '${_WEBHOOK_URL}',
       ]
 
 - name: 'gcr.io/cloud-builders/docker'
-  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/$_IMAGE:$_VERSION-$BRANCH_NAME$TAG_NAME', '-f', '$_VERSION/Dockerfile', '.' ]
+  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/$_IMAGE:$_VERSION$BRANCH_NAME$TAG_NAME', '-f', '$_VERSION/Dockerfile', '.' ]
 
 # slack deployment status
 - name: 'gcr.io/cloud-builders/curl'
@@ -24,7 +24,7 @@ steps:
           '-H',
           'Content-type: application/json',
           '--data',
-          '{"text":"gcr.io/${PROJECT_ID}/${_IMAGE}:${_VERSION}-${BRANCH_NAME}${TAG_NAME} build completed!"}',
+          '{"text":"gcr.io/${PROJECT_ID}/${_IMAGE}:${_VERSION}${BRANCH_NAME}${TAG_NAME} build completed!"}',
           '${_WEBHOOK_URL}',
       ]
 
@@ -32,7 +32,7 @@ steps:
 timeout: 1200s
 
 # store artifact
-images: ['gcr.io/$PROJECT_ID/$_IMAGE:$_VERSION-$BRANCH_NAME$TAG_NAME']
+images: ['gcr.io/$PROJECT_ID/$_IMAGE:$_VERSION$BRANCH_NAME$TAG_NAME']
 
 # arguments
 substitutions:
