@@ -28,8 +28,8 @@ steps:
           '${_WEBHOOK_URL}',
       ]
 
-# extend timeout to 20 min
-timeout: 1200s
+# extend timeout to 40 min
+timeout: 2400s
 
 # store artifact
 images: ['gcr.io/$PROJECT_ID/$_IMAGE:$_VERSION$BRANCH_NAME$TAG_NAME']
