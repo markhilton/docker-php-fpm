@@ -1,4 +1,4 @@
-FROM php:8.0-fpm
+FROM php:8.1-fpm
 
 RUN apt-get update -y
 RUN apt-get -y install gcc make autoconf libc-dev pkg-config libzip-dev
@@ -44,7 +44,7 @@ RUN docker-php-ext-install session shmop simplexml soap sockets sodium
 RUN docker-php-ext-install sysvmsg sysvsem sysvshm
 RUN docker-php-ext-install snmp
 RUN docker-php-ext-install xml xsl
-RUN docker-php-ext-install tidy tokenizer zend_test zip
+RUN docker-php-ext-install tidy zip
 RUN docker-php-ext-install filter
 
 # install pecl extension
