@@ -114,7 +114,7 @@ RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections &&
 	DEBIAN_FRONTEND=noninteractive apt-get install postfix libsasl2-modules -y
 
 # install NewRelic
-RUN export NEW_RELIC_AGENT_VERSION=3.0.5.95 \
+RUN export NEW_RELIC_AGENT_VERSION=10.9.0.324 \
 	&& curl -L https://download.newrelic.com/php_agent/archive/${NEW_RELIC_AGENT_VERSION}/newrelic-php5-${NEW_RELIC_AGENT_VERSION}-linux.tar.gz | tar -C /tmp -zx \
 	&& export NR_INSTALL_USE_CP_NOT_LN=1 \
 	&& export NR_INSTALL_SILENT=1 \
