@@ -5,65 +5,101 @@ RUN apt-get -y install gcc make autoconf libc-dev pkg-config libzip-dev
 
 RUN apt-get install -y --no-install-recommends \
 	git \
-	libmemcached-dev \
 	libz-dev \
 	libpq-dev \
-	libssl-dev libssl-doc libsasl2-dev \
 	libxml2-dev \
-	zlib1g-dev libicu-dev g++ \
+	libmemcached-dev \
 	libldap2-dev libbz2-dev \
-	curl libcurl4-openssl-dev \
-	libgmp-dev firebird-dev libib-util \
-	re2c libpng++-dev \
-	libwebp-dev libjpeg-dev libjpeg62-turbo-dev libpng-dev libxpm-dev libvpx-dev libfreetype6-dev \
-	libmagick++-dev \
-	libmagickwand-dev \
+	zlib1g-dev libicu-dev g++ \
+	libssl-dev libssl-doc libsasl2-dev \
+	curl libcurl4-openssl-dev
+
+RUN apt-get install -y --no-install-recommends \
+	libgmp-dev firebird-dev libib-util
+
+RUN apt-get install -y --no-install-recommends \
+	re2c libpng++-dev libwebp-dev libjpeg-dev libjpeg62-turbo-dev libpng-dev libxpm-dev libvpx-dev libfreetype6-dev
+
+RUN apt-get install -y --no-install-recommends \
+	python3-lib2to3 libmagick++-dev libmagickwand-dev
+
+RUN apt-get install -y --no-install-recommends \
 	zlib1g-dev libgd-dev \
-	libtidy-dev libxslt1-dev libmagic-dev libexif-dev file \
-	sqlite3 libsqlite3-dev libxslt-dev \
-	libmhash2 libmhash-dev libc-client-dev libkrb5-dev libssh2-1-dev \
 	unzip libpcre3 libpcre3-dev \
+	sqlite3 libsqlite3-dev libxslt-dev \
+	libtidy-dev libxslt1-dev libmagic-dev libexif-dev file \
+	libmhash2 libmhash-dev libc-client-dev libkrb5-dev libssh2-1-dev \
 	poppler-utils ghostscript libmagickwand-6.q16-dev libsnmp-dev libedit-dev libreadline6-dev libsodium-dev \
 	freetds-bin freetds-dev freetds-common libct4 libsybdb5 tdsodbc libreadline-dev librecode-dev libpspell-dev libonig-dev
 
-RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl && \
-	docker-php-ext-install imap iconv
+# issue on linux/amd64
+RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl && docker-php-ext-install imap
 
 # fix for docker-php-ext-install pdo_dblib
 # https://stackoverflow.com/questions/43617752/docker-php-and-freetds-cannot-find-freetds-in-know-installation-directories
 RUN ln -s /usr/lib/x86_64-linux-gnu/libsybdb.so /usr/lib/
 RUN docker-php-ext-install pdo_dblib
 
-RUN docker-php-ext-install bcmath bz2 calendar ctype curl dba dom
-RUN docker-php-ext-install fileinfo exif ftp gettext gmp
-RUN docker-php-ext-install intl ldap mbstring mysqli
-RUN docker-php-ext-install opcache pcntl pspell
-RUN docker-php-ext-install pdo_mysql pdo_pgsql pdo_sqlite pgsql phar posix
-RUN docker-php-ext-install session shmop simplexml soap sockets sodium
-RUN docker-php-ext-install sysvmsg sysvsem sysvshm
-RUN docker-php-ext-install snmp
-RUN docker-php-ext-install xml xsl
-RUN docker-php-ext-install tidy zip
+RUN docker-php-ext-install dba
+RUN docker-php-ext-install ldap
+RUN docker-php-ext-install bcmath
+RUN docker-php-ext-install bz2
+RUN docker-php-ext-install calendar
+RUN docker-php-ext-install ctype
+RUN docker-php-ext-install curl
+RUN docker-php-ext-install dom
+RUN docker-php-ext-install fileinfo
 RUN docker-php-ext-install filter
+RUN docker-php-ext-install exif
+RUN docker-php-ext-install ftp
+RUN docker-php-ext-install gettext
+RUN docker-php-ext-install gmp
+RUN docker-php-ext-install iconv
+RUN docker-php-ext-install intl
+RUN docker-php-ext-install mbstring
+RUN docker-php-ext-install mysqli
+RUN docker-php-ext-install opcache
+RUN docker-php-ext-install pcntl
+RUN docker-php-ext-install pspell
+RUN docker-php-ext-install pdo_mysql
+RUN docker-php-ext-install pdo_pgsql
+RUN docker-php-ext-install pdo_sqlite
+RUN docker-php-ext-install pgsql
+RUN docker-php-ext-install phar
+RUN docker-php-ext-install posix
+RUN docker-php-ext-install session
+RUN docker-php-ext-install shmop
+RUN docker-php-ext-install simplexml
+RUN docker-php-ext-install soap
+RUN docker-php-ext-install sockets
+RUN docker-php-ext-install sodium
+RUN docker-php-ext-install sysvmsg
+RUN docker-php-ext-install sysvsem
+RUN docker-php-ext-install sysvshm
+RUN docker-php-ext-install snmp
+RUN docker-php-ext-install tidy
+RUN docker-php-ext-install zip
+RUN docker-php-ext-install xsl
+RUN docker-php-ext-install xml
+
+# install GD
+RUN docker-php-ext-configure gd --with-jpeg --with-xpm --with-webp --with-freetype && \
+	docker-php-ext-install -j$(nproc) gd
+
+RUN docker-php-ext-configure spl && docker-php-ext-install spl
 
 # install pecl extension
-RUN pecl install ds && \
-	pecl install imagick && \
-	pecl install igbinary && \
-	pecl install memcached && \
-	docker-php-ext-enable ds imagick igbinary memcached
-
+RUN pecl install ds && docker-php-ext-enable ds
+RUN pecl install memcached && docker-php-ext-enable memcached
+RUN pecl install imagick && docker-php-ext-enable imagick
+RUN pecl install igbinary && docker-php-ext-enable igbinary
 RUN pecl install mongodb && docker-php-ext-enable mongodb
+RUN pecl install apcu && docker-php-ext-enable apcu --ini-name docker-php-ext-10-apcu.ini
+RUN yes "" | pecl install msgpack && docker-php-ext-enable msgpack
 
 # install xdebug
 # RUN pecl install xdebug && docker-php-ext-enable xdebug
 
-RUN yes "" | pecl install msgpack && \
-	docker-php-ext-enable msgpack
-
-# install APCu
-RUN pecl install apcu && \
-	docker-php-ext-enable apcu --ini-name docker-php-ext-10-apcu.ini
 
 RUN apt-get update -y && apt-get install -y apt-transport-https locales gnupg
 
@@ -76,16 +112,6 @@ RUN apt-get update -y && apt-get install -y apt-transport-https locales gnupg
 # 	&& pecl install pdo_sqlsrv \
 # 	&& docker-php-ext-enable pdo_sqlsrv \
 # 	&& apt-get purge -y unixodbc-dev && apt-get autoremove -y && apt-get clean
-
-# RUN docker-php-ext-configure spl && docker-php-ext-install spl
-
-# install GD
-RUN docker-php-ext-configure gd \
-	--with-jpeg \
-	--with-xpm \
-	--with-webp \
-	--with-freetype \
-	&& docker-php-ext-install -j$(nproc) gd
 
 # set locale to utf-8
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
@@ -113,8 +139,8 @@ RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections &&
 	echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
 	DEBIAN_FRONTEND=noninteractive apt-get install postfix libsasl2-modules -y
 
-# install NewRelic
-RUN export NEW_RELIC_AGENT_VERSION=10.9.0.324 \
+# install NewRelic - issue on linux/arm/v7
+RUN export NEW_RELIC_AGENT_VERSION=10.11.0.3 \
 	&& curl -L https://download.newrelic.com/php_agent/archive/${NEW_RELIC_AGENT_VERSION}/newrelic-php5-${NEW_RELIC_AGENT_VERSION}-linux.tar.gz | tar -C /tmp -zx \
 	&& export NR_INSTALL_USE_CP_NOT_LN=1 \
 	&& export NR_INSTALL_SILENT=1 \
