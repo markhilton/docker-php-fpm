@@ -86,7 +86,8 @@ RUN docker-php-ext-install xml
 RUN docker-php-ext-configure gd --with-jpeg --with-xpm --with-webp --with-freetype && \
 	docker-php-ext-install -j$(nproc) gd
 
-RUN docker-php-ext-configure spl && docker-php-ext-install spl
+# build fails with spl
+# RUN docker-php-ext-configure spl && docker-php-ext-install spl
 
 # install pecl extension
 RUN pecl install ds && docker-php-ext-enable ds
