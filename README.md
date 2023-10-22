@@ -9,11 +9,14 @@ The images are no light weight. The aim is to support maximum number of features
 
 ## Supported branches and respective Dockerfile links
 
--   7.4 [Dockerfile](https://github.com/markhilton/docker-php-fpm/blob/master/7.4/Dockerfile)
--   7.3 [Dockerfile](https://github.com/markhilton/docker-php-fpm/blob/master/7.3/Dockerfile)
--   7.2 [Dockerfile](https://github.com/markhilton/docker-php-fpm/blob/master/7.2/Dockerfile)
--   7.1 [Dockerfile](https://github.com/markhilton/docker-php-fpm/blob/master/7.1/Dockerfile)
--   5.6 [Dockerfile](https://github.com/markhilton/docker-php-fpm/blob/master/5.6/Dockerfile)
+- 8.2 [Dockerfile](https://github.com/markhilton/docker-php-fpm/blob/master/8.2/Dockerfile)
+- 8.1 [Dockerfile](https://github.com/markhilton/docker-php-fpm/blob/master/8.1/Dockerfile)
+- 8.0 [Dockerfile](https://github.com/markhilton/docker-php-fpm/blob/master/8.0/Dockerfile)
+- 7.4 [Dockerfile](https://github.com/markhilton/docker-php-fpm/blob/master/7.4/Dockerfile)
+- 7.3 [Dockerfile](https://github.com/markhilton/docker-php-fpm/blob/master/7.3/Dockerfile)
+- 7.2 [Dockerfile](https://github.com/markhilton/docker-php-fpm/blob/master/7.2/Dockerfile)
+- 7.1 [Dockerfile](https://github.com/markhilton/docker-php-fpm/blob/master/7.1/Dockerfile)
+- 5.6 [Dockerfile](https://github.com/markhilton/docker-php-fpm/blob/master/5.6/Dockerfile)
 
 ## What is PHP-FPM ?
 
@@ -182,92 +185,92 @@ turns on|off php error log to docker container stdout.
 
 ## Installed extensions
 
--   apc
--   apcu
--   bcmath
--   bz2
--   calendar
--   Core
--   ctype
--   curl
--   date
--   dba
--   dom
--   ds
--   enchant
--   exif
--   fileinfo
--   filter
--   ftp
--   gd
--   gettext
--   gmp
--   hash
--   iconv
--   igbinary
--   imagick
--   imap
--   interbase
--   intl
--   json
--   ldap
--   libxml
--   mbstring
--   memcache
--   memcached
--   mongodb
--   msgpack
--   mysqli
--   mysqlnd
--   newrelic
--   openssl
--   pcntl
--   pcre
--   PDO
--   pdo_dblib
--   pdo_mysql
--   pdo_pgsql
--   pdo_sqlite
--   pdo_sqlsrv
--   pgsql
--   Phar
--   posix
--   pspell
--   readline
--   recode
--   redis
--   Reflection
--   session
--   shmop
--   SimpleXML
--   soap
--   sockets
--   sodium
--   SPL
--   sqlite3
--   ssh2
--   standard
--   sysvmsg
--   sysvsem
--   sysvshm
--   test
--   tidy
--   tokenizer
--   wddx
--   xdebug
--   xml
--   xmlreader
--   xmlrpc
--   xmlwriter
--   xsl
--   Zend OPcache
--   zip
--   zlib
+- apc
+- apcu
+- bcmath
+- bz2
+- calendar
+- Core
+- ctype
+- curl
+- date
+- dba
+- dom
+- ds
+- enchant
+- exif
+- fileinfo
+- filter
+- ftp
+- gd
+- gettext
+- gmp
+- hash
+- iconv
+- igbinary
+- imagick
+- imap
+- interbase
+- intl
+- json
+- ldap
+- libxml
+- mbstring
+- memcache
+- memcached
+- mongodb
+- msgpack
+- mysqli
+- mysqlnd
+- newrelic
+- openssl
+- pcntl
+- pcre
+- PDO
+- pdo_dblib
+- pdo_mysql
+- pdo_pgsql
+- pdo_sqlite
+- pdo_sqlsrv
+- pgsql
+- Phar
+- posix
+- pspell
+- readline
+- recode
+- redis
+- Reflection
+- session
+- shmop
+- SimpleXML
+- soap
+- sockets
+- sodium
+- SPL
+- sqlite3
+- ssh2
+- standard
+- sysvmsg
+- sysvsem
+- sysvshm
+- test
+- tidy
+- tokenizer
+- wddx
+- xdebug
+- xml
+- xmlreader
+- xmlrpc
+- xmlwriter
+- xsl
+- Zend OPcache
+- zip
+- zlib
 
 ## Installed Zend Modules
 
--   Xdebug
--   Zend OPcache
+- Xdebug
+- Zend OPcache
 
 ## Pull latest image
 
@@ -322,8 +325,8 @@ docker run --rm -it crunchgeek/php-fpm:7.2 php -m
 
 Extensions that failed to build from 7.3 to [7.4](https://www.php.net/ChangeLog-7.php):
 
--   mhash (Implemented RFC: The hash extension is now an integral part of PHP and cannot be disabled)
--   interbase (Unbundled the InterBase extension and moved it to PECL)
--   recode (Unbundled the recode extension)
--   wddx (Deprecated and unbundled the WDDX extension)
--   docker-php-ext-configure gd --with-png [only PNG](https://github.com/docker-library/php/issues/912)
+- mhash (Implemented RFC: The hash extension is now an integral part of PHP and cannot be disabled)
+- interbase (Unbundled the InterBase extension and moved it to PECL)
+- recode (Unbundled the recode extension)
+- wddx (Deprecated and unbundled the WDDX extension)
+- docker-php-ext-configure gd --with-png [only PNG](https://github.com/docker-library/php/issues/912)
