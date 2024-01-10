@@ -275,7 +275,7 @@ turns on|off php error log to docker container stdout.
 ## Pull latest image
 
 ```sh
-docker pull crunchgeek/php-fpm:7.2
+docker pull crunchgeek/php-fpm:8.2
 ```
 
 ## Running PHP apps
@@ -285,7 +285,7 @@ docker pull crunchgeek/php-fpm:7.2
 Run the PHP-FPM image, mounting a directory from your host.
 
 ```sh
-docker run -it --name php-fpm -v /path/to/your/app:/app crunchgeek/php-fpm:7.2 php script.php
+docker run -it --name php-fpm -v /path/to/your/app:/app crunchgeek/php-fpm:8.2 php script.php
 ```
 
 or using [Docker Compose](https://docs.docker.com/compose/):
@@ -295,7 +295,7 @@ version: '3'
 services:
   php-fpm:
     container_name: php-fpm
-    image: crunchgeek/php-fpm:7.3
+    image: crunchgeek/php-fpm:8.2
     entrypoint: php index.php
     volumes:
       - /path/to/your/app:/app
@@ -304,7 +304,7 @@ services:
 ### Running as server
 
 ```sh
-docker run --rm --name php-fpm -v /path/to/your/app:/app -p 8000:8000 crunchgeek/php-fpm:7.2 php -S 0.0.0.0:8000 /app/index.php
+docker run --rm --name php-fpm -v /path/to/your/app:/app -p 8000:8000 crunchgeek/php-fpm:8.2 php -S 0.0.0.0:8000 /app/index.php
 ```
 
 ### Logging
@@ -316,17 +316,13 @@ docker logs php-fpm
 # Listing installed extensions
 
 ```sh
-docker run --rm -it crunchgeek/php-fpm:7.2 php -m
+docker run --rm -it crunchgeek/php-fpm:8.2 php -m
 ```
 
 # Release Notes
 
-## PHP-FPM 7.4
+## PHP-FPM 8.2
 
-Extensions that failed to build from 7.3 to [7.4](https://www.php.net/ChangeLog-7.php):
+Extensions that failed to build from 8.1 to [8.2](https://www.php.net/ChangeLog-8.php):
 
-- mhash (Implemented RFC: The hash extension is now an integral part of PHP and cannot be disabled)
-- interbase (Unbundled the InterBase extension and moved it to PECL)
-- recode (Unbundled the recode extension)
-- wddx (Deprecated and unbundled the WDDX extension)
-- docker-php-ext-configure gd --with-png [only PNG](https://github.com/docker-library/php/issues/912)
+- [spl](https://www.php.net/manual/en/book.spl.php)

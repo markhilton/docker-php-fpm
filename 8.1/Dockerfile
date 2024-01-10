@@ -47,7 +47,9 @@ RUN docker-php-ext-install xml xsl
 RUN docker-php-ext-install tidy zip
 RUN docker-php-ext-install filter
 
-# install pecl extension
+# install pecl extensions
+RUN pecl install redis && docker-php-ext-enable redis
+
 RUN pecl install ds && \
 	pecl install imagick && \
 	pecl install igbinary && \
@@ -111,11 +113,12 @@ RUN php composer-setup.php --quiet && rm composer-setup.php && \
 	chmod +x /usr/local/sbin/composer
 
 # install NewRelic agent
-RUN echo 'deb [trusted=yes] http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/sources.list.d/newrelic.list && \
-	curl https://download.newrelic.com/548C16BF.gpg | apt-key add - && \
-	apt-get -y update && \
-	DEBIAN_FRONTEND=noninteractive apt-get -y install newrelic-php5 newrelic-sysmond && \
-	export NR_INSTALL_SILENT=1 && newrelic-install install
+RUN export NEW_RELIC_AGENT_VERSION=10.11.0.3 \
+	&& curl -L https://download.newrelic.com/php_agent/archive/${NEW_RELIC_AGENT_VERSION}/newrelic-php5-${NEW_RELIC_AGENT_VERSION}-linux.tar.gz | tar -C /tmp -zx \
+	&& export NR_INSTALL_USE_CP_NOT_LN=1 \
+	&& export NR_INSTALL_SILENT=1 \
+	&& /tmp/newrelic-php5-${NEW_RELIC_AGENT_VERSION}-linux/newrelic-install install \
+	&& rm -rf /tmp/newrelic-php5-* /tmp/nrinstall*
 
 # install SendGrid
 RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections && \
