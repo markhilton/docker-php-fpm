@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.3-fpm
 
 RUN apt-get update -y
 RUN apt-get -y install gcc make autoconf libc-dev pkg-config libzip-dev
@@ -90,7 +90,6 @@ RUN docker-php-ext-configure gd --with-jpeg --with-xpm --with-webp --with-freety
 # RUN docker-php-ext-configure spl && docker-php-ext-install spl
 
 # install pecl extension
-RUN pecl install redis && docker-php-ext-enable redis
 RUN pecl install ds && docker-php-ext-enable ds
 RUN pecl install memcached && docker-php-ext-enable memcached
 RUN pecl install imagick && docker-php-ext-enable imagick
